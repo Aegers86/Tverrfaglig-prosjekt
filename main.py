@@ -1,5 +1,17 @@
 import tkinter as tk #Importerer tkinter
+import mysql.connector #Importerer mysql connector
 
+#Mysql connector
+db = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    passwd="root",
+    database="tverrfaglig_prosjekt"
+)
+
+db.close() #Lukker databasen
+
+#Klasse for GUI
 class GUI:
     def __init__(self):
         self.root = tk.Tk() #Lager et vindu
