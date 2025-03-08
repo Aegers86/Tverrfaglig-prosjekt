@@ -8,6 +8,7 @@ pip install python-dotenv
 lag en fil som heter .env, info i denne filen blir ikke synkronisert til github så du trenger ikke dele din info
 i denne legger du inn 
 
+De skal stå på egne linjer, vet ikke hvorfor github viser de slik, klikk edit eller raw for å kopiere.
 DB_USER=din bruker
 DB_PASSWORD=ditt passord
 DB_HOST=127.0.0.1
