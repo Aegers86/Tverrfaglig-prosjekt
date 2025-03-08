@@ -1,13 +1,24 @@
 import tkinter as tk #Importerer tkinter
 import mysql.connector #Importerer mysql connector
+from dotenv import load_dotenv #Importerer load_dotenv fra dotenv
+import os 
 
-#Mysql connector
+load_dotenv() #Laster inn .env filen
+#Henter informasjonen fra .env filen så vi slipper å eksponere passord og brukernavn
+DB_NAME = os.getenv("DB_NAME")
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
+
+#Mysql connector som bruker informasjonen fra .env filen
 db = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    passwd="root",
-    database="tverrfaglig_prosjekt"
-)
+    host=DB_HOST,
+    user=DB_USER,
+    passwd=DB_PASSWORD,
+    port=DB_PORT,
+    database=DB_NAME
+    )
 
 db.close() #Lukker databasen
 
