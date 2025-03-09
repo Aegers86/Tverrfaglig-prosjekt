@@ -50,3 +50,15 @@ class Database:
         cursor.close()
         self.close()
         return data
+    
+    #Hent resultatet av en lagret prosedyre
+    def call_procedure(self, procedure, args=()):
+        self.connect()
+        cursor = self.db.cursor()
+        cursor.callproc(procedure, args)
+        results = []
+        for result in cursor.stored_results():
+            results.extend(result.fetchall())
+        cursor.close()
+        self.close()
+        return results
