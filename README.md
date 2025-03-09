@@ -21,3 +21,10 @@ DB_NAME=varehusdb
 pdf
 
 https://wkhtmltopdf.org/downloads.html
+
+4.
+Lag en prosedyre for å hente alle kunder.
+
+create procedure hent_alle_kunder()
+SELECT * 
+FROM varehusdb.kunde;
