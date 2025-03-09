@@ -19,22 +19,22 @@ class GUI:
         self.root = tk.Tk() #Lager et vindu
         self.root.geometry("800x1000") #Setter størrelsen på vinduet
         self.root.title("Tverrfaglig prosjekt") #Setter tittelen på vinduet
+        self.root.columnconfigure(0, weight=2) #Setter vekt på kolonne 0
+        self.root.columnconfigure(1, weight=1) #Setter vekt på kolonne 1
+        self.root.columnconfigure(2, weight=1) #Setter vekt på kolonne 2
+        self.root.rowconfigure(1, weight=1) #Setter vekt på rad 1
 
         #Lager knapper
         self.knapp1 = tk.Button(master=self.root, text="Vis varer på lager", font=("Arial", 14), command=self.hentVarerPåLager) #Lager en knapp
         self.knapp2 = tk.Button(master=self.root, text="Vis alle ordre", font=("Arial", 14), command=self.hentAlleOrdrer) #Lager en knapp
         self.knapp3 = tk.Button(master=self.root, text="exit", font=("Arial", 14), command=self.terminate) #Lager en knapp
-        self.knapp1.pack(side=tk.TOP, expand=True, fill=tk.X, padx=10, pady=10) #Plasserer knappen i vinduet
-        self.knapp2.pack(side=tk.TOP, expand=True, fill=tk.X, padx=10, pady=10) #Plasserer knappen i vinduet
-        self.knapp3.pack(side=tk.TOP, expand=True, fill=tk.X, padx=10, pady=10) #Plasserer knappen i vinduet
-
-        #label over liste over varer på lager
-        #self.label = tk.Label(self.root, text="Varer på lager!", font=("Arial", 18)) #Lager en label
-        #self.label.pack(padx=10, pady=10) #Plasserer labelen i vinduet
+        self.knapp1.grid(row=0, column=0, sticky="ew") #Plasserer knappen i vinduet
+        self.knapp2.grid(row=0, column=1, sticky="ew") #Plasserer knappen i vinduet
+        self.knapp3.grid(row=0, column=2, sticky="ew") #Plasserer knappen i vinduet
 
         #Lager ett tre for å vise alle varer som er på lager
         self.tree = ttk.Treeview(self.root, show="headings")
-        self.tree.pack(padx=10, pady=10,side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+        self.tree.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky="nsew")
 
         #Koble klikk event til treet
         self.tree.bind("<Double-1>", self.påTreKlikk)
