@@ -10,7 +10,7 @@ class GUI:
         self.root.geometry("800x1000")  #Setter størrelsen på vinduet
         self.root.title("Tverrfaglig prosjekt")  #Setter tittelen på vinduet
         self.root.columnconfigure(0, weight=2)  #Konfigurerer kolonne 0
-        self.root.columnconfigure(1, weight=1)  #Konfigurerer kolonne 1
+        self.root.columnconfigure(1, weight=3)  #Konfigurerer kolonne 1
         self.root.columnconfigure(2, weight=1)  #Konfigurerer kolonne 2
         self.root.rowconfigure(1, weight=1)  #Konfigurerer rad 1
 
@@ -19,6 +19,7 @@ class GUI:
             "Vis varer på lager": self.hentVarerPåLager,
             "Vis alle ordre": self.hentAlleOrdrer,
             "Generer faktura": self.printPdf,
+            "Vis alle kunder": self.hentAlleKunder,
             "Avslutt": self.terminate
         }
         for i, (text, command) in enumerate(buttons.items()):
@@ -27,7 +28,7 @@ class GUI:
 
         #Oppretter tre for å vise data
         self.tree = ttk.Treeview(self.root, show="headings")
-        self.tree.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky="nsew")
+        self.tree.grid(row=1, column=0, columnspan=4, padx=10, pady=10, sticky="nsew")
         self.vsb = ttk.Scrollbar(self.root, orient="vertical", command=self.tree.yview)
         self.vsb.grid(row=1, column=4, sticky="ns")
         self.tree.configure(yscrollcommand=self.vsb.set)
@@ -55,21 +56,21 @@ class GUI:
 
     def hentVarerPåLager(self):
         self.tømTre()  
-        self.oppdaterKolonner(("VNr", "Betegnelse", "Pris", "Antall"))  #Oppdaterer kolonnene
+        self.oppdaterKolonner(("varenummer", "Betegnelse", "Pris", "Antall"))  #Oppdaterer kolonnene
         data = self.db.fetch_all("SELECT * FROM vare WHERE antall > 0 ORDER BY antall DESC;")  # Henter data fra databasen
         for i in data:
             self.tree.insert("", "end", values=i)  #Setter inn data i tre
 
     def hentAlleOrdrer(self):
         self.tømTre()  
-        self.oppdaterKolonner(("OrdreNr", "OrdreDato", "SendtDato", "BetaltDato", "KNr"))  #Oppdaterer kolonnene
+        self.oppdaterKolonner(("Ordrenummer", "Ordre dato", "Dato sendt", "Betalt Dato", "Kundenummer"))  #Oppdaterer kolonnene
         data = self.db.fetch_all("SELECT * FROM ordre;")  #Henter data fra databasen
         for i in data:
             self.tree.insert("", "end", values=i)  #Setter inn data i tre
 
     def visInfoOmOrdre(self, ordreNr):
         self.tømTre()  
-        self.oppdaterKolonner(("OrdreNr", "VNr", "PrisPrEnhet", "Antall"))  #Oppdaterer kolonnene
+        self.oppdaterKolonner(("Ordrenummer", "Varenummer", "Enhetspris", "Antall"))  #Oppdaterer kolonnene
         data = self.db.fetch_all(f"SELECT * FROM ordrelinje WHERE OrdreNr = {ordreNr};")  #Henter data fra databasen
         for i in data:
             self.tree.insert("", "end", values=i)  #Setter inn data i tre
@@ -91,5 +92,12 @@ class GUI:
         kunde = self.db.fetch_one(f"SELECT * FROM kunde WHERE KNr = {ordre[4]};")
 
         self.pdf_generator.generate_invoice(ordre, ordrelinjer, kunde)  #Genererer PDF
+
+    def hentAlleKunder(self):
+        self.tømTre() 
+        self.oppdaterKolonner(("Kundenummer", "Fornavn", "Etternavn", "Adresse", "Post Nummer"))  #Oppdaterer kolonnene
+        data = self.db.call_procedure("hent_alle_kunder")  #Henter data fra databasen
+        for i in data:
+            self.tree.insert("", "end", values=i)
 
 GUI()  #Starter GUI
