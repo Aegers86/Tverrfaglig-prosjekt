@@ -23,7 +23,7 @@ pdf
 https://wkhtmltopdf.org/downloads.html
 
 4.
-Lag en prosedyre for å hente alle kunder.
+Lag en prosedyre for å hente alle kunder, dette gjøres i mysql workbench
 
 create procedure hent_alle_kunder()
 SELECT * 
