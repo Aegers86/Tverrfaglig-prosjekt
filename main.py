@@ -20,23 +20,23 @@ class GUI:
         self.root.geometry("800x1000") #Setter størrelsen på vinduet
         self.root.title("Tverrfaglig prosjekt") #Setter tittelen på vinduet
 
-        #Lager en knapp
-        self.button = tk.Button(self.root, text="Vis varer på lager", font=("Arial", 14), command=self.hentVarerPåLager) #Lager en knapp
-        self.button.pack(padx=10, pady=10) #Plasserer knappen i vinduet
-
-        #Lager en knapp
-        self.button = tk.Button(self.root, text="Vis alle ordre", font=("Arial", 14), command=self.hentAlleOrdrer) #Lager en knapp
-        self.button.pack(padx=10, pady=10) #Plasserer knappen i vinduet
+        #Lager knapper
+        self.knapp1 = tk.Button(master=self.root, text="Vis varer på lager", font=("Arial", 14), command=self.hentVarerPåLager) #Lager en knapp
+        self.knapp2 = tk.Button(master=self.root, text="Vis alle ordre", font=("Arial", 14), command=self.hentAlleOrdrer) #Lager en knapp
+        self.knapp3 = tk.Button(master=self.root, text="exit", font=("Arial", 14), command=self.terminate) #Lager en knapp
+        self.knapp1.pack(side=tk.TOP, expand=True, fill=tk.X, padx=10, pady=10) #Plasserer knappen i vinduet
+        self.knapp2.pack(side=tk.TOP, expand=True, fill=tk.X, padx=10, pady=10) #Plasserer knappen i vinduet
+        self.knapp3.pack(side=tk.TOP, expand=True, fill=tk.X, padx=10, pady=10) #Plasserer knappen i vinduet
 
         #label over liste over varer på lager
-        self.label = tk.Label(self.root, text="Varer på lager!", font=("Arial", 18)) #Lager en label
-        self.label.pack(padx=10, pady=10) #Plasserer labelen i vinduet
+        #self.label = tk.Label(self.root, text="Varer på lager!", font=("Arial", 18)) #Lager en label
+        #self.label.pack(padx=10, pady=10) #Plasserer labelen i vinduet
 
         #Lager ett tre for å vise alle varer som er på lager
         self.tree = ttk.Treeview(self.root, show="headings")
-        self.tree.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+        self.tree.pack(padx=10, pady=10,side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
-        #Koble click event til treet
+        #Koble klikk event til treet
         self.tree.bind("<Double-1>", self.påTreKlikk)
            
         self.root.protocol("WM_DELETE_WINDOW", self.terminate) #Lukker vinduet/avslutter programmet
