@@ -4,6 +4,7 @@ from tkinter import ttk #Importerer ttk fra tkinter
 import mysql.connector #Importerer mysql connector
 from dotenv import load_dotenv #Importerer load_dotenv fra dotenv
 import os 
+import pdfkit
 
 load_dotenv() #Laster inn .env filen og henter informasjonen fra .env filen så vi slipper å eksponere passord og brukernavn
 #Husk og lage en fil som heter .gitignore(Ser ut som den kommer med på pull request) og legg til .env i denne filen slik at .env filen ikke blir lastet opp til github
@@ -24,20 +25,26 @@ class GUI:
         self.root.columnconfigure(2, weight=1) #Setter vekt på kolonne 2
         self.root.rowconfigure(1, weight=1) #Setter vekt på rad 1
 
-        #Lager knapper
-        self.knapp1 = tk.Button(master=self.root, text="Vis varer på lager", font=("Arial", 14), command=self.hentVarerPåLager) #Lager en knapp
-        self.knapp2 = tk.Button(master=self.root, text="Vis alle ordre", font=("Arial", 14), command=self.hentAlleOrdrer) #Lager en knapp
-        self.knapp3 = tk.Button(master=self.root, text="exit", font=("Arial", 14), command=self.terminate) #Lager en knapp
-        self.knapp1.grid(row=0, column=0, sticky="ew") #Plasserer knappen i vinduet
-        self.knapp2.grid(row=0, column=1, sticky="ew") #Plasserer knappen i vinduet
-        self.knapp3.grid(row=0, column=2, sticky="ew") #Plasserer knappen i vinduet
+        #Lager knapper, lager en dictionary med knappene og funksjonene de skal utføre
+        buttons = {
+            "Vis varer på lager": self.hentVarerPåLager,
+            "Vis alle ordre": self.hentAlleOrdrer,
+            "Avslutt": self.terminate,
+            "Print pdf": self.printPdf
+        }
+        #Lager knappene og plasserer de i vinduet ut i fra dictionaryen over
+        for i, (text, command) in enumerate(buttons.items()):
+            button = tk.Button(master=self.root, text=text, font=("Arial", 14), command=command)
+            button.grid(row=0, column=i, sticky="ew")
 
         #Lager ett tre for å vise alle varer som er på lager
         self.tree = ttk.Treeview(self.root, show="headings")
         self.tree.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky="nsew")
+        #Lager en vertikal scrollbar for treet
         self.vsb = ttk.Scrollbar(self.root, orient="vertical", command=self.tree.yview)
-        self.vsb.grid(row=1, column=3, sticky="ns")
-        self.tree.configure(yscrollcommand=self.vsb.set)
+        self.vsb.grid(row=1, column=3, sticky="ns") #Plasserer scrollbaren i vinduet
+        self.tree.configure(yscrollcommand=self.vsb.set) #Knytter scrollbaren til treet
+
         #Koble klikk event til treet
         self.tree.bind("<Double-1>", self.påTreKlikk)
            
@@ -68,9 +75,9 @@ class GUI:
             self.tree.column(col, width=100, anchor="center")
 
     def hentVarerPåLager(self): #Henter data fra databasen og legger det inn i treet
-        self.tømTre()
+        self.tømTre() #Tømmer treet
         self.oppdaterKolonner(("VNr", "Betegnelse", "Pris", "Antall")) 
-        self.databaseConnection()
+        self.databaseConnection() 
         c = self.db.cursor()
         c.execute("SELECT * FROM vare WHERE antall > 0 ORDER BY antall DESC;") #order by funker ikke for en eller annen grunn, sjekkes.
         data = c.fetchall()
@@ -78,27 +85,21 @@ class GUI:
             self.tree.insert("", "end", values=i)
         c.close()
 
-    def hentAlleOrdrer(self):
-        #Tømmer treet
-        self.tømTre()
+    def hentAlleOrdrer(self): #Henter data fra databasen og legger det inn i treet
+        self.tømTre() #Tømmer treet
         self.oppdaterKolonner(("OrdreNr", "OrdreDato", "SendtDato", "BetaltDato", "KNr")) 
-
-        #Henter data fra databasen og legger det inn i treet
-        self.databaseConnection()
+        self.databaseConnection() 
         c = self.db.cursor()
-        c.execute("SELECT * FROM ordre;") #order by funker ikke for en eller annen grunn, sjekkes.
+        c.execute("SELECT * FROM ordre;")
         data = c.fetchall()
         for i in data:
             self.tree.insert("", "end", values=i)
         c.close()
 
     def visInfoOmOrdre(self, ordreNr):
-        #Tømmer treet
-        self.tømTre()
+        self.tømTre() #Tømmer treet
         self.oppdaterKolonner(("OrdreNr","VNr", "PrisPrEnhet", "Antall")) 
-
-        #Henter data fra databasen og legger det inn i treet
-        self.databaseConnection()
+        self.databaseConnection() #Henter data fra databasen og legger det inn i treet
         c = self.db.cursor()
         c.execute(f"SELECT * FROM ordrelinje WHERE OrdreNr = {ordreNr};") #Må legge inn join fra kunde, legge sammen ordrelinjer og total pris på ordre
         data = c.fetchall()
@@ -107,8 +108,68 @@ class GUI:
         c.close()
 
     def påTreKlikk(self, _): #Henter data fra treet og viser informasjon om ordrenummeret
-        selected_item = self.tree.selection()[0]
-        ordreNr = self.tree.item(selected_item, "values")[0]
-        self.visInfoOmOrdre(ordreNr)
+        selected_item = self.tree.selection()[0] #Henter ut det valgte elementet i treet
+        ordreNr = self.tree.item(selected_item, "values")[0] #Henter ut ordrenummeret va valgte elementet
+        self.visInfoOmOrdre(ordreNr) #Viser informasjon om ordrenummeret
+
+
+    def printPdf(self):
+        selected_item = self.tree.selection()
+        if not selected_item:
+            messagebox.showwarning("Ingen valgt", "Vennligst velg en ordre å skrive ut.")
+            return
+
+        ordreNr = self.tree.item(selected_item[0], "values")[0]
+        self.databaseConnection()
+        c = self.db.cursor()
+        c.execute(f"SELECT * FROM ordrelinje WHERE OrdreNr = {ordreNr};") #kanskje bedre å ta dette i en egen metode, eller i en join?
+        ordrelinjer = c.fetchall()
+        c.execute(f"SELECT * FROM ordre WHERE OrdreNr = {ordreNr};")
+        ordre = c.fetchone()
+        c.execute(f"SELECT * FROM kunde WHERE KNr = {ordre[4]};")
+        kunde = c.fetchone()
+        c.close()
+
+        html_content = f"""
+        <html>
+        <head><title>Faktura</title></head>
+        <body>
+            <h1>Faktura</h1>
+            <p><strong>OrdreNr:</strong> {ordre[0]}</p>
+            <p><strong>OrdreDato:</strong> {ordre[1]}</p>
+            <p><strong>SendtDato:</strong> {ordre[2]}</p>
+            <p><strong>BetaltDato:</strong> {ordre[3]}</p>
+            <p><strong>Kunde:</strong> {kunde[1]} {kunde[2]}</p>
+            <table border="1">
+                <tr>
+                    <th>VNr</th>
+                    <th>PrisPrEnhet</th>
+                    <th>Antall</th>
+                </tr>
+        """
+        for linje in ordrelinjer:
+            html_content += f"""
+                <tr>
+                    <td>{linje[1]}</td>
+                    <td>{linje[2]}</td>
+                    <td>{linje[3]}</td>
+                </tr>
+            """
+        html_content += """
+            </table>
+        </body>
+        </html>
+        """
+
+        # Spesifiserer lokasjonen av programmet wkhtmltopdf
+        path_to_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
+        config = pdfkit.configuration(wkhtmltopdf=path_to_wkhtmltopdf)
+
+        pdf_filename = f"faktura_{ordreNr}.pdf"
+        pdfkit.from_string(html_content, pdf_filename, configuration=config)
+        messagebox.showinfo("Suksess", f"Faktura lagret som {pdf_filename}")
+
+        # Åpne PDF-filen
+        os.startfile(pdf_filename)
 
 GUI() #Kjører programmet
