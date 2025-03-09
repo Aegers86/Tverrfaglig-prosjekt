@@ -35,7 +35,9 @@ class GUI:
         #Lager ett tre for å vise alle varer som er på lager
         self.tree = ttk.Treeview(self.root, show="headings")
         self.tree.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky="nsew")
-
+        self.vsb = ttk.Scrollbar(self.root, orient="vertical", command=self.tree.yview)
+        self.vsb.grid(row=1, column=3, sticky="ns")
+        self.tree.configure(yscrollcommand=self.vsb.set)
         #Koble klikk event til treet
         self.tree.bind("<Double-1>", self.påTreKlikk)
            
