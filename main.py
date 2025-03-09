@@ -9,9 +9,12 @@ class GUI:
         self.root = tk.Tk()  #Oppretter hovedvinduet
         self.root.geometry("800x1000")  #Setter størrelsen på vinduet
         self.root.title("Tverrfaglig prosjekt")  #Setter tittelen på vinduet
-        self.root.columnconfigure(0, weight=2)  #Konfigurerer kolonne 0
-        self.root.columnconfigure(1, weight=3)  #Konfigurerer kolonne 1
+        self.root.columnconfigure(0, weight=1)  #Konfigurerer kolonne 0
+        self.root.columnconfigure(1, weight=1)  #Konfigurerer kolonne 1
         self.root.columnconfigure(2, weight=1)  #Konfigurerer kolonne 2
+        self.root.columnconfigure(3, weight=1)  #Konfigurerer kolonne 3
+        self.root.columnconfigure(4, weight=0)  #Konfigurerer kolonne 4
+        
         self.root.rowconfigure(1, weight=1)  #Konfigurerer rad 1
 
         #Oppretter knapper med tilhørende kommandoer
@@ -28,9 +31,9 @@ class GUI:
 
         #Oppretter tre for å vise data
         self.tree = ttk.Treeview(self.root, show="headings")
-        self.tree.grid(row=1, column=0, columnspan=4, padx=10, pady=10, sticky="nsew")
+        self.tree.grid(row=1, column=0, columnspan=5, padx=10, pady=10, sticky="nsew")
         self.vsb = ttk.Scrollbar(self.root, orient="vertical", command=self.tree.yview)
-        self.vsb.grid(row=1, column=4, sticky="ns")
+        self.vsb.grid(row=1, column=5, sticky="ns", padx=(0, 10))
         self.tree.configure(yscrollcommand=self.vsb.set)
         self.tree.bind("<Double-1>", self.påTreKlikk)  #Binder dobbeltklikk til funksjonen påTreKlikk
 
