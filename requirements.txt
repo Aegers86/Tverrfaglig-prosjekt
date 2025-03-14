@@ -1,8 +1,11 @@
-mysql-connector-python
-python-dotenv
+mysql-connector-python~=9.2.0
+python-dotenv~=1.0.1
 tk
 requests
 fastapi
 uvicorn
-reportlab
-faker
+reportlab~=4.3.0
+faker~=37.0.0
+
+mysql~=0.0.3
+Flask~=3.1.0
