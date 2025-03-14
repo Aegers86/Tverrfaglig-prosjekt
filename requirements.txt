@@ -1,0 +1,8 @@
+mysql-connector-python
+python-dotenv
+tk
+requests
+fastapi
+uvicorn
+reportlab
+faker
