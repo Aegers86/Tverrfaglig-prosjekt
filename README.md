@@ -82,8 +82,3 @@ Stored Procedure brukt:
 CREATE PROCEDURE hent_alle_kunder()
 SELECT * FROM varehusdb.kunde;
 -------------------------
-👥 Gruppearbeid og rapportering
-Kodebase: Dokumentasjon er skrevet i koden.
-Gruppelogg: Beskriver hvem som har jobbet med hvilke oppgaver.
-Rapport: Maks 10–12 sider med beskrivelse av løsninger, utfordringer og refleksjon.
-Presentasjon: Skal vare 15–20 minutter og dekke hele prosjektet.
