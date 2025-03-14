@@ -10,7 +10,7 @@ class GUI:
         self.root = tk.Tk()
         self.root.geometry("960x600")
         self.root.resizable(False, False)
-        self.root.title(TEXTS["title"])  # Bruk tekst fra strings.py
+        self.root.title(TEXTS["title"])
 
         self.db = Database()
         self.pdf_generator = PDFGenerator()
@@ -22,8 +22,10 @@ class GUI:
         self.nav_label = None
         self.content_frame = None
         self.table_frame = None
+        self.tree_frame = None  # Defineres her
         self.tree = None
         self.vsb = None
+        self.hsb = None  # Defineres her
         self.home_frame = None
 
         self.setup_ui()
@@ -68,19 +70,47 @@ class GUI:
         tk.Button(self.sidebar, text=TEXTS["exit"], font=("Arial", 12), bg="#FF6347", command=self.terminate).pack(fill="x", padx=5, pady=10)
 
     def toggle_theme(self):
+        """Bytter mellom mørk og lys modus og oppdaterer UI."""
         self.dark_mode = not self.dark_mode
+
+        # Farger for mørk og lys modus
         bg_color = "#333333" if self.dark_mode else "#EAEAEA"
         fg_color = "#FFFFFF" if self.dark_mode else "#000000"
         btn_color = "#555555" if self.dark_mode else "#E0E0E0"
+        table_bg = "#2E2E2E" if self.dark_mode else "#FFFFFF"
+        table_fg = "#FFFFFF" if self.dark_mode else "#000000"
+        header_bg = "#444444" if self.dark_mode else "#F0F0F0"  # Bakgrunn for kolonne-headeren
+        header_fg = "#FFFFFF" if self.dark_mode else "#000000"
 
+        # Oppdater hovedkomponenter
         self.sidebar.config(bg=bg_color)
         self.nav_label.config(bg=bg_color, fg=fg_color)
         self.root.config(bg=bg_color)
 
-        # Oppdater alle knappene i sidebar
+        # Oppdater knappene i sidemenyen
         for widget in self.sidebar.winfo_children():
             if isinstance(widget, tk.Button):
                 widget.config(bg=btn_color, fg=fg_color)
+
+        # **Sørg for at "Generer faktura" og "Avslutt" beholder sine farger**
+        self.sidebar.winfo_children()[-2].config(bg="#FFD700", fg="#000000")  # Generer faktura
+        self.sidebar.winfo_children()[-1].config(bg="#FF6347", fg="#FFFFFF")  # Avslutt-knappen
+
+        # **Oppdater Treeview (tabell)**
+        style = ttk.Style()
+        style.theme_use("alt")  # Bruk et alternativt tema for å gi bedre kontroll
+
+        style.configure("Treeview",
+                        background=table_bg, foreground=table_fg, fieldbackground=table_bg,
+                        rowheight=25, font=("Arial", 10))
+
+        style.configure("Treeview.Heading",
+                        background=header_bg, foreground=header_fg, font=("Arial", 10, "bold"),
+                        relief="flat")
+
+        style.map("Treeview.Heading",
+                  background=[("active", header_bg)],
+                  foreground=[("active", header_fg)])
 
     def clear_tree(self):
         """Fjerner alle rader fra tabellen."""
@@ -88,11 +118,17 @@ class GUI:
             self.tree.delete(item)
 
     def update_columns(self, columns):
-        """Oppdaterer kolonnene i tabellen."""
+        """Oppdaterer kolonnene i tabellen og sørger for at scrollbarene fungerer."""
         self.tree["columns"] = columns
+
         for col in columns:
             self.tree.heading(col, text=col)
-            self.tree.column(col, width=100, anchor="center")
+            self.tree.column(col, width=150, anchor="center", stretch=True)  # Gir nok plass til scrollbarene
+
+        # **Tving scrollbarene til å vises ved behov**
+        self.tree.update_idletasks()  # Sikrer at layouten oppdateres umiddelbart
+        self.vsb.update_idletasks()
+        self.hsb.update_idletasks()
 
     def display_home(self):
         """Viser nøkkeltall på hjemmesiden."""
@@ -120,7 +156,7 @@ class GUI:
         """Generisk funksjon for å vise data i tabellen uten å ødelegge GUI."""
         self.navigation_status.set(nav_text)
 
-        # 🔹 Sørg for at tabellen vises
+        # Vis tabellen og skjul home-skjermen
         self.home_frame.pack_forget()
         self.table_frame.pack(padx=10, pady=10, expand=True, fill="both")
 
@@ -130,6 +166,9 @@ class GUI:
 
         for row in data:
             self.tree.insert("", "end", values=row)
+
+        # **Tving scrollbarene til å vises ved behov**
+        self.tree.update_idletasks()
 
     def goto_home(self):
         self.navigation_status.set(TEXTS["home_title"])
@@ -195,13 +234,30 @@ class GUI:
             self.root.destroy()
 
     def create_treeview(self):
-        """Oppretter én Treeview-widget og scrollbar."""
-        self.tree = ttk.Treeview(self.table_frame, show="headings")
+        """Oppretter én Treeview-widget med fungerende horisontal og vertikal scrollbar."""
+        self.tree_frame = tk.Frame(self.table_frame)
+        self.tree_frame.pack(expand=True, fill="both")
+
+        # Opprett Treeview med scrollbars
+        self.tree = ttk.Treeview(self.tree_frame, show="headings")
+
+        # Vertikal scrollbar
+        self.vsb = ttk.Scrollbar(self.tree_frame, orient="vertical", command=self.tree.yview)
+        self.tree.configure(yscrollcommand=self.vsb.set)
+
+        # Horisontal scrollbar
+        self.hsb = ttk.Scrollbar(self.tree_frame, orient="horizontal", command=self.tree.xview)
+        self.tree.configure(xscrollcommand=self.hsb.set)
+
+        # Plasser scrollbars riktig
+        self.vsb.pack(side="right", fill="y")
+        self.hsb.pack(side="bottom", fill="x")
+
+        # Plasser Treeview på riktig måte
         self.tree.pack(expand=True, fill="both")
 
-        self.vsb = ttk.Scrollbar(self.table_frame, orient="vertical", command=self.tree.yview)
-        self.vsb.pack(side="right", fill="y")
-        self.tree.configure(yscrollcommand=self.vsb.set)
+        # **Sikre at Treeview fyller plassen riktig**
+        self.tree_frame.pack_propagate(False)
 
     def run(self):
         """Starter GUI."""
