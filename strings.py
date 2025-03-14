@@ -23,5 +23,11 @@ TEXTS = {
         "Totalt antall varer",
         "Betalte fakturaer",
         "Ubetalte fakturaer"
-    ]
+    ],
+    "success": "Suksess",
+    "invoice_generated": "Fakturaen har blitt generert!",
+    "error": "Feil",
+    "order_not_found": "Kunne ikke finne ordren.",
+    "customer_not_found": "Kunne ikke finne kunden."
+
 }
