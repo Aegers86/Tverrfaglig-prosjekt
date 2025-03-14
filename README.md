@@ -1,30 +1,89 @@
-Tverrfaglig prosjekt for Gruppe 1 i database og programmering
 
-1.
-installer python-dotenv, mysql database connector og pdfkit.
-pip install python-dotenv
-pip install mysql.connector
-pip install pdfkit
+📝 Prosjektbeskrivelse
+Dette prosjektet består av en GUI-basert applikasjon for håndtering av handel og lager. Applikasjonen kobler seg til en MySQL-database og gir brukerne mulighet til å vise, legge til og administrere kunder, ordrer og varelager.
 
-2.
-lag en fil som heter .env, info i denne filen blir ikke synkronisert til github så du trenger ikke dele din info
-i denne legger du inn 
+Prosjektet inkluderer
+-------------------------
+✔️ GUI laget med Tkinter
+✔️ Databaseforbindelse med MySQL
+✔️ Stored Procedures for databaseoperasjoner
+✔️ SQL-injection beskyttelse
+✔️ Feilhåndtering og input-validering
+✔️ API-integrasjon for visning av varelager i en nettleser
+✔️ PDF-generering for fakturaer (valgfritt)
+-------------------------
 
-De skal stå på egne linjer, vet ikke hvorfor github viser de slik, klikk edit eller raw for å kopiere.
-DB_USER=din bruker
-DB_PASSWORD=ditt passord
+📂 Installasjon og oppsett
+
+1. Installer nødvendige pakker
+Kjør følgende kommando for å installere alle avhengigheter:
+
+-------------------------
+pip install -r requirements.txt
+-------------------------
+
+2. Konfigurer miljøvariabler
+Opprett en .env-fil i rotmappen og legg inn følgende (juster verdier etter din database):
+-------------------------
+DB_USER=ditt_brukernavn
+DB_PASSWORD=ditt_passord
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_NAME=varehusdb
+-------------------------
 
-3.
-pdf
+3. Sett opp databasen
+Kjør følgende script for å opprette nødvendige tabeller og fylle inn testdata:
+-------------------------
+python setup_database.py
+-------------------------
 
-https://wkhtmltopdf.org/downloads.html
+4. Start applikasjonen
+-------------------------
+python gui.py
+-------------------------
+📌 Funksjonalitet i applikasjonen
+🔹 Hjemmeside
 
-4.
-Lag en prosedyre for å hente alle kunder, dette gjøres i mysql workbench
+Viser nøkkeltall: Antall kunder, ordrer, varer, betalte og ubetalte fakturaer.
+🔹 Varelager
 
-create procedure hent_alle_kunder()
-SELECT * 
-FROM varehusdb.kunde;
+Viser en liste over varer med varenummer, navn, pris og antall.
+🔹 Ordrer
+
+Viser alle ordrer med detaljer om dato, status og kunde.
+Mulighet for å velge en ordre og se detaljer om varer, priser og totalbeløp.
+🔹 Kunder
+
+Viser alle kunder registrert i databasen.
+Bruker Stored Procedure for å hente kundelisten.
+🔹 Generer faktura (valgfritt)
+
+Genererer en faktura i PDF-format for en valgt ordre.
+🔹 Dark Mode
+
+Brukeren kan velge mellom lys og mørk modus.
+🛠 Teknologi og bibliotek brukt
+Python 3.11
+Tkinter (GUI)
+mysql-connector-python (Databaseforbindelse)
+python-dotenv (Miljøvariabler)
+pdfkit (For PDF-generering av fakturaer)
+📊 Databaseoppsett
+Tabeller i databasen:
+
+kunde (kunderegister)
+vare (produktlager)
+ordre (ordrehistorikk)
+ordrelinje (varer i hver ordre)
+Stored Procedure brukt:
+
+-------------------------
+CREATE PROCEDURE hent_alle_kunder()
+SELECT * FROM varehusdb.kunde;
+-------------------------
+👥 Gruppearbeid og rapportering
+Kodebase: Dokumentasjon er skrevet i koden.
+Gruppelogg: Beskriver hvem som har jobbet med hvilke oppgaver.
+Rapport: Maks 10–12 sider med beskrivelse av løsninger, utfordringer og refleksjon.
+Presentasjon: Skal vare 15–20 minutter og dekke hele prosjektet.
