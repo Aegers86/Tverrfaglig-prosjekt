@@ -1,9 +1,6 @@
 # 🏆 Tverrfaglig Prosjekt – Gruppe 1  
 **Database- og programmeringsprosjekt**  
 
-📅 **Innleveringsfrist:** 25. mai 23:59  
-📌 **Fag:** Programmering (PROG) og Database (DB)  
-
 ---
 
 ## 📝 Prosjektbeskrivelse  
