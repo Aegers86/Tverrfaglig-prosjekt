@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kunder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</head>
+<body>
+    <h1>Kundeliste</h1>
+    <table id="kunderTable">
+        <thead>
+            <tr>
+                <th>Kundenr</th>
+                <th>Fornavn</th>
+                <th>Etternavn</th>
+                <th>Adresse</th>
+                <th>Postnummer</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data lastes inn med JavaScript -->
+        </tbody>
+    </table>
+<h2>Legg til ny kunde</h2>
+<form id="addCustomerForm">
+    <input type="text" id="fornavn" placeholder="Fornavn" required>
+    <input type="text" id="etternavn" placeholder="Etternavn" required>
+    <input type="text" id="adresse" placeholder="Adresse" required>
+    <input type="number" id="postnummer" placeholder="Postnummer" required>
+    <input type="email" id="epost" placeholder="E-post" required>
+    <button type="submit">Legg til</button>
+</form>
+    <nav>
+        <a href="{{ url_for('home') }}">Tilbake</a>
+    </nav>
+</body>
+</html>
