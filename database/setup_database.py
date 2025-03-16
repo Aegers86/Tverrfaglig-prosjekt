@@ -26,29 +26,19 @@ cursor = conn.cursor()
 cursor.execute(f"CREATE DATABASE IF NOT EXISTS {DB_NAME}")
 cursor.execute(f"USE {DB_NAME}")
 
-# Create 'vare' table (products table)
+# ✅ Ensure 'kunde' table exists before altering it
 cursor.execute("""
-    CREATE TABLE IF NOT EXISTS vare (
-        varenummer INT AUTO_INCREMENT PRIMARY KEY,
-        betegnelse VARCHAR(255) NOT NULL,
-        pris DECIMAL(10,2) NOT NULL,
-        antall INT NOT NULL DEFAULT 0
+    CREATE TABLE IF NOT EXISTS kunde (
+        knr INT AUTO_INCREMENT PRIMARY KEY,
+        fornavn VARCHAR(255) NOT NULL,
+        etternavn VARCHAR(255) NOT NULL,
+        adresse VARCHAR(255) NOT NULL,
+        postnummer INT NOT NULL,
+        epost VARCHAR(255) UNIQUE NOT NULL
     )
 """)
 
-# Create 'ordre' table (orders table)
-cursor.execute("""
-    CREATE TABLE IF NOT EXISTS ordre (
-        ordrenummer INT AUTO_INCREMENT PRIMARY KEY,
-        ordre_dato DATE NOT NULL,
-        dato_sendt DATE NULL,
-        betalt_dato DATE NULL,
-        kundenummer INT NOT NULL,
-        FOREIGN KEY (kundenummer) REFERENCES kunde(knr) ON DELETE CASCADE
-    )
-""")
-
-# ✅ Check if 'epost' column exists, if not, add it as NULL first
+# ✅ Check if 'epost' column exists, if not, add it
 cursor.execute("SHOW COLUMNS FROM kunde LIKE 'epost'")
 if cursor.fetchone() is None:
     print("🔄 Adding missing 'epost' column to kunde table...")
@@ -73,15 +63,40 @@ if customers_without_email:
 cursor.execute("ALTER TABLE kunde MODIFY COLUMN epost VARCHAR(255) UNIQUE NOT NULL")
 conn.commit()
 
-# ✅ Create 'kunde' table (customers table) with `epost` column if it doesn't exist
+# ✅ Ensure `hent_alle_kunder()` stored procedure exists
+cursor.execute("SHOW PROCEDURE STATUS WHERE Db = %s AND Name = 'hent_alle_kunder'", (DB_NAME,))
+if not cursor.fetchone():
+    print("🔄 Creating missing stored procedure 'hent_alle_kunder'...")
+    cursor.execute("""
+        DELIMITER //
+        CREATE PROCEDURE hent_alle_kunder()
+        BEGIN
+            SELECT knr, fornavn, etternavn, adresse, postnummer, epost FROM kunde;
+        END //
+        DELIMITER ;
+    """)
+    conn.commit()
+    print("✅ Stored procedure 'hent_alle_kunder' created!")
+
+# Create 'vare' table (products table)
 cursor.execute("""
-    CREATE TABLE IF NOT EXISTS kunde (
-        knr INT AUTO_INCREMENT PRIMARY KEY,
-        fornavn VARCHAR(255) NOT NULL,
-        etternavn VARCHAR(255) NOT NULL,
-        adresse VARCHAR(255) NOT NULL,
-        postnummer INT NOT NULL,
-        epost VARCHAR(255) UNIQUE NOT NULL
+    CREATE TABLE IF NOT EXISTS vare (
+        varenummer INT AUTO_INCREMENT PRIMARY KEY,
+        betegnelse VARCHAR(255) NOT NULL,
+        pris DECIMAL(10,2) NOT NULL,
+        antall INT NOT NULL DEFAULT 0
+    )
+""")
+
+# Create 'ordre' table (orders table)
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS ordre (
+        ordrenummer INT AUTO_INCREMENT PRIMARY KEY,
+        ordre_dato DATE NOT NULL,
+        dato_sendt DATE NULL,
+        betalt_dato DATE NULL,
+        kundenummer INT NOT NULL,
+        FOREIGN KEY (kundenummer) REFERENCES kunde(knr) ON DELETE CASCADE
     )
 """)
 
@@ -89,16 +104,16 @@ cursor.execute("""
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS ordrelinje (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        ordreNr INT,
-        varenummer INT,
-        pris_pr_enhet DECIMAL(10,2),
-        antall INT,
+        ordreNr INT NOT NULL,
+        varenummer INT NOT NULL,
+        pris_pr_enhet DECIMAL(10,2) NOT NULL,
+        antall INT NOT NULL,
         FOREIGN KEY (ordreNr) REFERENCES ordre(ordrenummer) ON DELETE CASCADE,
         FOREIGN KEY (varenummer) REFERENCES vare(varenummer) ON DELETE CASCADE
     )
 """)
 
-# Insert sample data if the table is empty
+# ✅ Insert sample data if the table is empty
 cursor.execute("SELECT COUNT(*) FROM vare")
 if cursor.fetchone()[0] == 0:
     cursor.execute("INSERT INTO vare (betegnelse, pris, antall) VALUES ('Laptop', 10000.00, 5)")

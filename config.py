@@ -1,48 +1,37 @@
 # config.py
-# En fil som inneholder konfigurasjoner for GUI-applikasjonen
-# Definer kolonnebredder for tabeller
-COLUMN_WIDTHS = {
-    "Ordrenummer": 100,
-    "Ordre dato": 120,
-    "Dato sendt": 120,
-    "Betalt Dato": 120,
-    "Kundenavn": 200,
-    "Varenummer": 100,
-    "Betegnelse": 200,
-    "Pris": 100,
-    "Antall": 100,
-    "KundeNr": 80,
-    "Fornavn": 120,
-    "Etternavn": 120,
-    "Adresse": 200,
-    "PostNr": 80,
-    "Epost": 200,
+# ✅ Konfigurasjonsfil for Flask, database og logging
+
+import os
+from dotenv import load_dotenv
+
+# Last inn miljøvariabler
+load_dotenv()
+
+# Flask-konfigurasjon
+FLASK_CONFIG = {
+    "DEBUG": True,
+    "HOST": os.getenv("FLASK_HOST", "127.0.0.1"),
+    "PORT": int(os.getenv("FLASK_PORT", 5000)),
 }
 
-# Definer farger for Light Mode og Dark Mode
-THEME_COLORS = {
-    "light": {
-        "bg": "#EAEAEA",
-        "fg": "#000000",
-        "sidebar": "#E0E0E0",
-        "button_bg": "#E0E0E0",
-        "button_fg": "#000000",
-    },
-    "dark": {
-        "bg": "#333333",
-        "fg": "#FFFFFF",
-        "sidebar": "#444444",
-        "button_bg": "#555555",
-        "button_fg": "#FFFFFF",
-    },
+# Databasekonfigurasjon
+DATABASE_CONFIG = {
+    "NAME": os.getenv("DB_NAME"),
+    "USER": os.getenv("DB_USER"),
+    "PASSWORD": os.getenv("DB_PASSWORD"),
+    "HOST": os.getenv("DB_HOST", "127.0.0.1"),
+    "PORT": int(os.getenv("DB_PORT", 3306)),
 }
 
-# SQL Queries for å hente nøkkeltall
-QUERY_STATS = """
-    SELECT 
-        (SELECT COUNT(*) FROM kunde),
-        (SELECT COUNT(*) FROM ordre),
-        (SELECT COUNT(*) FROM vare),
-        (SELECT COUNT(*) FROM ordre WHERE betalt_dato IS NOT NULL),
-        (SELECT COUNT(*) FROM ordre WHERE betalt_dato IS NULL)
-"""
+# API-konfigurasjon
+API_CONFIG = {
+    "PREFIX": "/api",
+    "VERSION": "v1",
+    "SECRET_KEY": os.getenv("SECRET_KEY", "supersecretkey"),
+}
+
+# Logging-konfigurasjon
+LOGGING_CONFIG = {
+    "LOG_FILE": "app.log",
+    "LOG_LEVEL": os.getenv("LOG_LEVEL", "INFO"),
+}
