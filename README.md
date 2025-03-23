@@ -43,7 +43,7 @@ legge til og administrere kunder, ordrer og varelager.
  
 - ✔️ **PDF-generering** for fakturaer (valgfritt)  
  
-
+- ✔️ Flask er brukt som rammeverk for webside/API
  
 ---
  
