@@ -93,3 +93,4 @@ def ordrer():
 if __name__ == "__main__":
     logging.info(f"🚀 Flask-server starter på http://{config.FLASK_CONFIG['HOST']}:{config.FLASK_CONFIG['PORT']} 🚀")
     app.run(debug=config.FLASK_CONFIG["DEBUG"], host=config.FLASK_CONFIG["HOST"], port=config.FLASK_CONFIG["PORT"])
+    print(f"🚀 Flask-server starter på http://{config.FLASK_CONFIG['HOST']}:{config.FLASK_CONFIG['PORT']} 🚀")
