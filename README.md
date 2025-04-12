@@ -109,7 +109,7 @@ python setup_database.py
  
 ```bash
  
-python gui.py
+python app.py
  
 ```
  
