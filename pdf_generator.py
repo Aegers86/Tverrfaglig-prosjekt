@@ -15,7 +15,6 @@ class PDFGenerator:
         customer_info = f"""
         <b>Kunde:</b> {kunde[1]} {kunde[2]}<br/>
         <b>Adresse:</b> {kunde[3]}, {kunde[4]}<br/>
-        <b>Epost:</b> {kunde[5]}
         """
         elements.append(Paragraph(customer_info, styles["Normal"]))
         elements.append(Spacer(1, 12))
@@ -31,7 +30,7 @@ class PDFGenerator:
 
             table_data.append([
                 f"{quantity:,}",  # Formats with thousands separator
-                f"Vare {linje[1]}",
+                f"{linje[4]}", #varenavn
                 f"{unit_price:,.2f} NOK",
                 f"{line_total:,.2f} NOK"
             ])

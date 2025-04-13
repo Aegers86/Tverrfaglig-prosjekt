@@ -90,8 +90,8 @@ class GUI:
             return
 
         ordreNr = self.tree.item(selected_item[0], "values")[0]
-        ordrelinjer = self.db.fetch_all(f"SELECT * FROM ordrelinje WHERE OrdreNr = {ordreNr};")
-        ordre = self.db.fetch_one(f"SELECT * FROM ordre WHERE ordrenummer = {ordreNr};")
+        ordrelinjer = self.db.fetch_all(f"SELECT ordrelinje.*, vare.betegnelse FROM ordrelinje JOIN vare ON ordrelinje.VNr = vare.VNr WHERE ordrelinje.ordreNr = {ordreNr};")
+        ordre = self.db.fetch_one(f"SELECT * FROM ordre WHERE OrdreNr = {ordreNr};")
         kunde = self.db.fetch_one(f"SELECT * FROM kunde WHERE knr = {ordre[4]};")
         print(f"ordre {ordre},ordrelinje {ordrelinjer}, kunde {kunde}")
         pdfgen = PDFGenerator()
