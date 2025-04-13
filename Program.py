@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
 from database.database_program import Database
-#from pdf_generator import PDFGenerator
+from pdf_generator import PDFGenerator
 
 class GUI:
     def __init__(self):
@@ -21,7 +21,7 @@ class GUI:
         buttons = {
             "Vis varer på lager": self.hentVarerPåLager,
             "Vis alle ordre": self.hentAlleOrdrer,
-            #"Generer faktura": self.printPdf,
+            "Generer faktura": self.printPdf,
             "Vis alle kunder": self.hentAlleKunder,
             "Avslutt": self.terminate
         }
@@ -83,7 +83,7 @@ class GUI:
         ordreNr = self.tree.item(selected_item, "values")[0]  #Henter ordrenummer
         self.visInfoOmOrdre(ordreNr)  #Viser informasjon om ordren
 
-    """def printPdf(self):
+    def printPdf(self):
         selected_item = self.tree.selection()
         if not selected_item:
             messagebox.showwarning("Ingen valgt", "Vennligst velg en ordre å skrive ut.")
@@ -91,11 +91,12 @@ class GUI:
 
         ordreNr = self.tree.item(selected_item[0], "values")[0]
         ordrelinjer = self.db.fetch_all(f"SELECT * FROM ordrelinje WHERE OrdreNr = {ordreNr};")
-        ordre = self.db.fetch_one(f"SELECT * FROM ordre WHERE OrdreNr = {ordreNr};")
-        kunde = self.db.fetch_one(f"SELECT * FROM kunde WHERE KNr = {ordre[4]};")
-
-        self.pdf_generator.generate_invoice(ordre, ordrelinjer, kunde)  #Genererer PDF
-    """
+        ordre = self.db.fetch_one(f"SELECT * FROM ordre WHERE ordrenummer = {ordreNr};")
+        kunde = self.db.fetch_one(f"SELECT * FROM kunde WHERE knr = {ordre[4]};")
+        print(f"ordre {ordre},ordrelinje {ordrelinjer}, kunde {kunde}")
+        pdfgen = PDFGenerator()
+        pdfgen.generate_invoice(ordre,ordrelinjer,kunde)  #Genererer PDF
+    
     def hentAlleKunder(self):
         self.tømTre() 
         self.oppdaterKolonner(("Kundenummer", "Fornavn", "Etternavn", "Adresse", "Post Nummer"))  #Oppdaterer kolonnene

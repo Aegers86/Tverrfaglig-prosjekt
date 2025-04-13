@@ -1,10 +1,12 @@
-# app.py - Flask-applikasjonen for handel og lagerstyring
+
 from flask import Flask, render_template, jsonify
 from api.api import api_blueprint
 from database.database import Database
 import logging
 import config
 from database.populate_database import populate_database  # ✅ Importer og kjør
+
+#app.py - Flask-applikasjonen for handel og lagerstyring
 
 # ✅ Initialiser Flask-applikasjonen
 app = Flask(__name__)
