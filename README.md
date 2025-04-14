@@ -91,18 +91,8 @@ DB_NAME=varehusdb
  
 ### **3. Sett opp databasen**  
  
-Kjør følgende script for å opprette nødvendige tabeller og fylle inn testdata:  
- 
-
- 
-```bash
- 
-python setup_database.py
- 
-```
- 
-
- 
+Bruk .sql fil fra skole oppgava  
+  
 ### **4. Start applikasjonen**  
  
 
