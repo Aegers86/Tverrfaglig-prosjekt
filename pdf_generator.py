@@ -1,6 +1,6 @@
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer, Image
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 import os
 
@@ -10,6 +10,13 @@ class PDFGenerator:
         doc = SimpleDocTemplate(pdf_filename, pagesize=A4)
         elements = []
         styles = getSampleStyleSheet()
+
+        # 🔽 Add a static PNG image at the top (e.g., logo)
+        logo_path = "Z:\Programmering\Tverrfaglig prosjekt\Tverrfaglig-prosjekt\static\logo.png" # Path to your logo
+        img = Image(logo_path, width=100, height=50)  # Adjust size as needed
+        img.hAlign = 'LEFT'
+        elements.append(img)
+        elements.append(Spacer(1, 12))
 
         # **Customer Information**
         customer_info = f"""
@@ -24,13 +31,13 @@ class PDFGenerator:
         total_amount = 0
 
         for linje in ordrelinjer:
-            quantity = int(float(linje[3]))  # Ensuring whole numbers for quantity
-            unit_price = float(linje[2])  # Convert to float to avoid errors
+            quantity = int(float(linje[3]))
+            unit_price = float(linje[2])
             line_total = quantity * unit_price
 
             table_data.append([
-                f"{quantity:,}",  # Formats with thousands separator
-                f"{linje[4]}", #varenavn
+                f"{quantity:,}",
+                f"{linje[4]}",
                 f"{unit_price:,.2f} NOK",
                 f"{line_total:,.2f} NOK"
             ])
@@ -48,8 +55,17 @@ class PDFGenerator:
 
         # **Total Summary**
         elements.append(Spacer(1, 12))
-        elements.append(Paragraph(f"<b>Total:</b> {total_amount:,.2f} NOK", styles["Normal"]))
+        elements.append(Paragraph(f"<b>Total (eks. MVA):</b> {total_amount:,.2f} NOK", styles["Normal"]))
 
+        # Calculate 25% MVA
+        mva_amount = total_amount * 0.25
+        elements.append(Paragraph(f"<b>25% MVA:</b> {mva_amount:,.2f} NOK", styles["Normal"]))
+
+        # Total including MVA
+        total_with_mva = total_amount + mva_amount
+        elements.append(Paragraph(f"<b>Total (inkl. MVA):</b> {total_with_mva:,.2f} NOK", styles["Normal"]))
+
+
+        # Build PDF
         doc.build(elements)
         os.startfile(pdf_filename)
-
