@@ -32,20 +32,20 @@ class Database:
             self.db.close()
 
     #Hent alle rader fra en spørring
-    def fetch_all(self, query):
+    def fetch_all(self, query, params=None):
         self.connect()
         cursor = self.db.cursor()
-        cursor.execute(query)
+        cursor.execute(query, params or ())
         data = cursor.fetchall()
         cursor.close()
         self.close()
         return data
 
     #Hent en enkelt rad fra en spørring
-    def fetch_one(self, query):
+    def fetch_one(self, query, params=None):
         self.connect()
         cursor = self.db.cursor()
-        cursor.execute(query)
+        cursor.execute(query, params or ())
         data = cursor.fetchone()
         cursor.close()
         self.close()

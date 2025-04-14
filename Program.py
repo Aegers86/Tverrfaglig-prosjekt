@@ -21,7 +21,7 @@ class GUI:
         buttons = {
             "Vis varer på lager": self.hentVarerPåLager,
             "Vis alle ordre": self.hentAlleOrdrer,
-            "Generer faktura": self.printPdf,
+            #"Generer faktura": self.printPdf,
             "Vis alle kunder": self.hentAlleKunder,
             "Avslutt": self.terminate
         }
@@ -79,10 +79,41 @@ class GUI:
             self.tree.insert("", "end", values=i)  #Setter inn data i tre
 
     def påTreKlikk(self, _):
-        selected_item = self.tree.selection()[0]  #Henter valgt element
-        ordreNr = self.tree.item(selected_item, "values")[0]  #Henter ordrenummer
-        self.visInfoOmOrdre(ordreNr)  #Viser informasjon om ordren
+        selected_item = self.tree.selection()
+        if not selected_item:
+            messagebox.showwarning("Ingen valgt", "Vennligst velg en ordre.")
+            return
 
+        ordreNr = self.tree.item(selected_item[0], "values")[0]
+
+        # Lager nytt vindu for ordre detaljer
+        details_window = tk.Toplevel(self.root)
+        details_window.title(f"Ordre detaljer - OrdreNr: {ordreNr}")
+        details_window.geometry("600x400")
+
+        # Legger til en knapp for å generere faktura
+        generate_invoice_button = tk.Button(details_window, text="Generer faktura", command=lambda: self.printPdf())
+        generate_invoice_button.pack(pady=10)
+
+        # Lager Treeview for å vise ordre detaljer
+        details_tree = ttk.Treeview(details_window, show="headings")
+        details_tree.pack(fill="both", expand=True, padx=10, pady=10, side="left")
+
+        # Legger til scrollbar for Treeview
+        details_vsb = ttk.Scrollbar(details_window, orient="vertical", command=details_tree.yview)
+        details_vsb.pack(side="right", fill="y")
+        details_tree.configure(yscrollcommand=details_vsb.set)
+
+        # Henter data for ordre detaljer
+        details_tree["columns"] = ("Ordrenummer", "Varenummer", "Enhetspris", "Antall")
+        for col in details_tree["columns"]:
+            details_tree.heading(col, text=col)
+            details_tree.column(col, width=100, anchor="center")
+
+        data = self.db.fetch_all(f"SELECT * FROM ordrelinje WHERE OrdreNr = {ordreNr};")
+        for i in data:
+            details_tree.insert("", "end", values=i)
+ 
     def printPdf(self):
         selected_item = self.tree.selection()
         if not selected_item:
