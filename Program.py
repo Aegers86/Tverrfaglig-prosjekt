@@ -21,7 +21,6 @@ class GUI:
         buttons = {
             "Vis varer på lager": self.hentVarerPåLager,
             "Vis alle ordre": self.hentAlleOrdrer,
-            #"Generer faktura": self.printPdf,
             "Vis alle kunder": self.hentAlleKunder,
             "Avslutt": self.terminate
         }
@@ -38,7 +37,6 @@ class GUI:
         self.tree.bind("<Double-1>", self.påTreKlikk)  #Binder dobbeltklikk til funksjonen påTreKlikk
 
         self.db = Database()  #Initialiserer databaseobjektet
-        #self.pdf_generator = PDFGenerator(r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')  #Initialiserer PDF-generatoren
 
         self.root.protocol("WM_DELETE_WINDOW", self.terminate)  #Håndterer lukking av vinduet
         self.root.mainloop()  #Starter hovedløkken
@@ -74,7 +72,7 @@ class GUI:
     def visInfoOmOrdre(self, ordreNr):
         self.tømTre()  
         self.oppdaterKolonner(("Ordrenummer", "Varenummer", "Enhetspris", "Antall"))  #Oppdaterer kolonnene
-        data = self.db.fetch_all(f"SELECT * FROM ordrelinje WHERE OrdreNr = {ordreNr};")  #Henter data fra databasen
+        data = self.db.fetch_all("SELECT * FROM ordrelinje WHERE OrdreNr = %s;", (ordreNr,))  #Henter data fra databasen med beskyttet parameter for SQL-injeksjon.
         for i in data:
             self.tree.insert("", "end", values=i)  #Setter inn data i tre
 
@@ -110,7 +108,7 @@ class GUI:
             details_tree.heading(col, text=col)
             details_tree.column(col, width=100, anchor="center")
 
-        data = self.db.fetch_all(f"SELECT * FROM ordrelinje WHERE OrdreNr = {ordreNr};")
+        data = self.db.fetch_all("SELECT * FROM ordrelinje WHERE OrdreNr = %s;", (ordreNr,))
         for i in data:
             details_tree.insert("", "end", values=i)
  
@@ -121,11 +119,11 @@ class GUI:
             return
 
         ordreNr = self.tree.item(selected_item[0], "values")[0]
-        ordrelinjer = self.db.fetch_all(f"SELECT ordrelinje.*, vare.betegnelse FROM ordrelinje JOIN vare ON ordrelinje.VNr = vare.VNr WHERE ordrelinje.ordreNr = {ordreNr};")
-        ordre = self.db.fetch_one(f"SELECT * FROM ordre WHERE OrdreNr = {ordreNr};")
-        kunde = self.db.fetch_one(f"SELECT * FROM kunde WHERE knr = {ordre[4]};")
-        print(f"ordre {ordre},ordrelinje {ordrelinjer}, kunde {kunde}")
-        pdfgen = PDFGenerator()
+        ordrelinjer = self.db.fetch_all("SELECT ordrelinje.*, vare.betegnelse FROM ordrelinje JOIN vare ON ordrelinje.VNr = vare.VNr WHERE ordrelinje.ordreNr = %s;", (ordreNr,))  #Henter ordrelinjer fra databasen med beskyttet parameter for SQL-injeksjon.
+        ordre = self.db.fetch_one("SELECT * FROM ordre WHERE OrdreNr = %s;", (ordreNr,)) #Henter ordre data fra databasen med beskyttet parameter for SQL-injeksjon.
+        kunde = self.db.fetch_one("SELECT * FROM kunde WHERE knr = %s;", (ordre[4],))  #Henter kunde data fra databasen med beskyttet parameter for SQL-injeksjon.
+        #print(f"ordre {ordre},ordrelinje {ordrelinjer}, kunde {kunde}") #debugging print
+        pdfgen = PDFGenerator() #Initialiserer PDF-generatoren
         pdfgen.generate_invoice(ordre,ordrelinjer,kunde)  #Genererer PDF
     
     def hentAlleKunder(self):
