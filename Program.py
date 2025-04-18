@@ -93,15 +93,15 @@ class GUI:
 
         # Legger til en knapp for å generere faktura
         generate_invoice_button = tk.Button(details_window, text="Generer faktura", command=lambda: self.printPdf())    #Lager knapp som heter "Generer faktura" og kjører funksjonen printPdf()
-        generate_invoice_button.pack(pady=10)                                                                           #ØYVIND FIKS GRID + kommentar etterpå hihi
+        generate_invoice_button.pack(pady=10)                                                                           #I dette vinduet ønsket vi å prøve pack istedet for grid, for å oppleve forskjellen
 
         # Treeview ordredetaljer detaljer
         details_tree = ttk.Treeview(details_window, show="headings")                                #Lager Treeview for å vise ordre detaljer
-        details_tree.pack(fill="both", expand=True, padx=10, pady=10, side="left")                  #ØYVIND FIKS GRID + kommentar etterpå hihi
+        details_tree.pack(fill="both", expand=True, padx=10, pady=10, side="left")                  #Setter størrelse og plassering i GUI. 
 
         # Legger til scrollbar for Treeview i nytt vindu
         details_vsb = ttk.Scrollbar(details_window, orient="vertical", command=details_tree.yview)  #Lager Treeview for å vise ordre detaljer i nytt vindu
-        details_vsb.pack(side="right", fill="y")                                                    #ØYVIND FIKS GRID + kommentar etterpå hihi
+        details_vsb.pack(side="right", fill="y")                                                    #Setter størrelse og plassering i GUI.
         details_tree.configure(yscrollcommand=details_vsb.set)                                      #Kobler sammen treet og scrollbaren
 
         # Henter data for ordre detaljer
@@ -124,14 +124,14 @@ class GUI:
         ordrelinjer = self.db.fetch_all("SELECT ordrelinje.*, vare.betegnelse FROM ordrelinje JOIN vare ON ordrelinje.VNr = vare.VNr WHERE ordrelinje.ordreNr = %s;", (ordreNr,))  #Henter ordrelinjer fra databasen med beskyttet parameter for SQL-injeksjon.
         ordre = self.db.fetch_one("SELECT * FROM ordre WHERE OrdreNr = %s;", (ordreNr,))                                                                                           #Henter ordre data fra databasen med beskyttet parameter for SQL-injeksjon.
         kunde = self.db.fetch_one("SELECT * FROM kunde WHERE knr = %s;", (ordre[4],))                                                                                              #Henter kunde data fra databasen med beskyttet parameter for SQL-injeksjon.
-        #print(f"ordre {ordre},ordrelinje {ordrelinjer}, kunde {kunde}")                                                                                                           #debugging print
+        #print(f"ordre {ordre},ordrelinje {ordrelinjer}, kunde {kunde}")                                                                                                           #debugging print, vi lar denne stå for å vise hvordan vi jobbet med å finne rett måte å velge rett index.
         pdfgen = PDFGenerator()                                                                                                                                                    #Initialiserer/kjører PDF-generatoren
         pdfgen.generate_invoice(ordre,ordrelinjer,kunde)                                                                                                                           #Genererer PDF med informasjon lagret i variablene over
     
     def hentAlleKunder(self):                                                                      #Funksjon for å se kundedb med stored procedure
         self.tømTre()                                                                              #Kjører funksjonen for å tømme treet
         self.oppdaterKolonner(("Kundenummer", "Fornavn", "Etternavn", "Adresse", "Post Nummer"))   #Oppdaterer kolonnene
-        data = self.db.call_procedure("hent_alle_kunder")                                          #Henter data fra databasen ... ØYVIND FIX
+        data = self.db.call_procedure("hent_alle_kunder")                                          #Henter data fra databasen med følgende store procedure: "SELECT * FROM varehusdb.kunde;"
         for i in data:                                                                             #Henter dataene som ligger i variablen data
             self.tree.insert("", "end", values=i)                                                  #Setter inn informasjonen som er lagret i "i"
 
