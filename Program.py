@@ -128,10 +128,10 @@ class GUI:
         pdfgen = PDFGenerator()                                                                                                                                                    #Initialiserer/kjører PDF-generatoren
         pdfgen.generate_invoice(ordre,ordrelinjer,kunde)                                                                                                                           #Genererer PDF med informasjon lagret i variablene over
     
-    def hentAlleKunder(self):                                                                      #Funksjon for å se kundedb med stored procedure
+    def hentAlleKunder(self):                                                                      #Funksjon for å se kundedb med stored procedures
         self.tømTre()                                                                              #Kjører funksjonen for å tømme treet
         self.oppdaterKolonner(("Kundenummer", "Fornavn", "Etternavn", "Adresse", "Post Nummer"))   #Oppdaterer kolonnene
-        data = self.db.call_procedure("hent_alle_kunder")                                          #Henter data fra databasen med følgende store procedure: "SELECT * FROM varehusdb.kunde;"
+        data = self.db.call_procedure("hent_alle_kunder")                                          #Henter data fra databasen med følgende store procedures: "SELECT * FROM varehusdb.kunde;"
         for i in data:                                                                             #Henter dataene som ligger i variablen data
             self.tree.insert("", "end", values=i)                                                  #Setter inn informasjonen som er lagret i "i"
 
