@@ -7,17 +7,31 @@ from pdf_generator import PDFGenerator           #Vi har valgt å prøve oss på
 
 #CLASS GUI - klasse for å konstruere applikasjon/programmet. 
 class GUI:
-    def __init__(self):                          #Denne kjøres automatisk når du konstruerer/lager et objekt. Denne initialiserer/genererer programmet.  
-        self.root = tk.Tk()                      #Oppretter hovedvinduet
-        self.root.geometry("800x1000")           #Setter størrelsen på vinduet
-        self.root.title("Tverrfaglig prosjekt")  #Setter tittelen på vinduet
-        self.root.columnconfigure(0, weight=1)   #Konfigurerer kolonne 0
-        self.root.columnconfigure(1, weight=1)   #Konfigurerer kolonne 1
-        self.root.columnconfigure(2, weight=1)   #Konfigurerer kolonne 2
-        self.root.columnconfigure(3, weight=1)   #Konfigurerer kolonne 3
-        self.root.columnconfigure(4, weight=0)   #Konfigurerer kolonne 4
+    def __init__(self):                                                     #Denne kjøres automatisk når du konstruerer/lager et objekt. Denne initialiserer/genererer programmet.  
+        self.root = tk.Tk()                                                 #Oppretter hovedvinduet
+        self.root.geometry("800x1000")                                      #Setter størrelsen på vinduet
+        self.root.title("Tverrfaglig prosjekt")                             #Setter tittelen på vinduet
+        #Legger til menylinje
+        self.menubar = tk.Menu(self.root)                                   #Oppretter menylinjen
+        self.root.config(menu=self.menubar)                                 #Knytter menylinjen til vinduet
+
+        self.filemeny = tk.Menu(self.menubar, tearoff=0)                    #Oppretter undermenyen i menylinjen
+        self.menubar.add_cascade(label="Fil", menu=self.filemeny)           #Legger undermenyen til menylinjen
+        self.filemeny.add_command(label="Print PDF", command=self.printPdf) #Legger til kommandoen "Print PDF" i undermenyen
+        self.filemeny.add_separator()                                       #Legger til en separator i undermenyen
+        self.filemeny.add_command(label="Avslutt", command=self.terminate)  #Legger til kommandoen "Avslutt" i undermenyen
+
+        self.hjelpmeny = tk.Menu(self.menubar, tearoff=0)                   #Oppretter hjelp i menylinjen
+        self.menubar.add_cascade(label="Hjelp", menu=self.hjelpmeny)        #Legger til hjelpen i menylinjen
+        self.hjelpmeny.add_command(label="Om", command=self.omVindu)        #Legger til kommandoen "Om" i undermenyen
+
+        self.root.columnconfigure(0, weight=1)                              #Konfigurerer kolonne 0
+        self.root.columnconfigure(1, weight=1)                              #Konfigurerer kolonne 1
+        self.root.columnconfigure(2, weight=1)                              #Konfigurerer kolonne 2
+        self.root.columnconfigure(3, weight=1)                              #Konfigurerer kolonne 3
+        self.root.columnconfigure(4, weight=0)                              #Konfigurerer kolonne 4
         
-        self.root.rowconfigure(1, weight=1)      #Konfigurerer rad 1
+        self.root.rowconfigure(1, weight=1)                                 #Konfigurerer rad 1
 
         #Oppretter knapper med tilhørende kommandoer
         buttons = {
@@ -133,6 +147,16 @@ class GUI:
         self.oppdaterKolonner(("Kundenummer", "Fornavn", "Etternavn", "Adresse", "Post Nummer"))   #Oppdaterer kolonnene
         data = self.db.call_procedure("hent_alle_kunder")                                          #Henter data fra databasen med følgende store procedures: "SELECT * FROM varehusdb.kunde;"
         for i in data:                                                                             #Henter dataene som ligger i variablen data
-            self.tree.insert("", "end", values=i)                                                  #Setter inn informasjonen som er lagret i "i"
+            self.tree.insert("", "end", values=i)  
+            
+    def omVindu(self):                                                                                                                  #Funksjon for å vise informasjon om programmet
+        # Lager nytt vindu for å vise informasjon om programmet
+        about_window = tk.Toplevel(self.root)                                                                                           #Lager popupvindu
+        about_window.title("Om programmet")                                                                                             #Setter navn på popupvindu
+        about_window.geometry("300x200")                                                                                                #Setter størrelse på popupvinduet
+        about_label = tk.Label(about_window, text="Tverrfaglig prosjekt\n\nGruppe 1\n\nLaget av:\n\nCharlotte, Knut, Truls og Øyvind")  #Lager tekst i vinduet                                          
+        about_label.pack(pady=20)                                                                                                       #Setter plassering i vinduet
+        close_button = tk.Button(about_window, text="Lukk", command=about_window.destroy)                                               #Lager lukkeknapp i vinduet    
+        close_button.pack(padx=10)                                                                                                      #Setter lukkeknapp i vinduet
 
 GUI()  #Starter GUI
