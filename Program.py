@@ -160,7 +160,7 @@ class GUI:
         about_window = tk.Toplevel(self.root)                                                                                           #Lager popupvindu
         about_window.title("Om programmet")                                                                                             #Setter navn på popupvindu
         about_window.geometry("300x200")                                                                                                #Setter størrelse på popupvinduet
-        about_label = tk.Label(about_window, text="Tverrfaglig prosjekt\n\nGruppe 1\n\nLaget av:\n\nCharlotte, Knut, Truls og Øyvind")  #Lager tekst i vinduet                                          
+        about_label = tk.Label(about_window, text="Tverrfaglig prosjekt\nGruppe 1\nLaget av:\nCharlotte, Knut, Truls og Øyvind")  #Lager tekst i vinduet                                          
         about_label.pack(pady=20)                                                                                                       #Setter plassering i vinduet
         close_button = tk.Button(about_window, text="Lukk", command=about_window.destroy)                                               #Lager lukkeknapp i vinduet    
         close_button.pack(padx=10)                                                                                                      #Setter lukkeknapp i vinduet
