@@ -103,7 +103,13 @@ class GUI:
         # Lager nytt vindu for ordre detaljer
         details_window = tk.Toplevel(self.root)                                                     #Lager popupvindu
         details_window.title(f"Ordre detaljer - OrdreNr: {ordreNr}")                                #Setter navn på popupvindu basert på ordrenummer
-        details_window.geometry("600x400")                                                          #Setter størrelse på popupvinduet
+        details_window.geometry("1000x400")                                                          #Setter størrelse på popupvinduet
+
+        # Legge til ordreinfo
+        kundenummer = self.tree.item(selected_item[0], "values")[4]                                                                                                                     #Variabel for å lagre brukervalg i ordre
+        kundedata = self.db.fetch_one("SELECT * ,Poststed.Poststed FROM kunde inner join Poststed on Kunde.PostNr = Poststed.PostNr WHERE KNr = %s;", (kundenummer,))                   #Variabel som lagrer resultat fra SQL-spørring. Her skal vi vise adresse til kunde og må koble sammen postnummer og poststed for å få riktig visning slik vi vil ha det. Dette gjør vi med inner join og henter fra to tabeller "poststed" og "kunde".    
+        kundelabel = tk.Label(details_window, text = f"Kundenummer: {kundedata[0]}\nNavn: {kundedata[1]} {kundedata[2]}\n Adresse: {kundedata[3]}, {kundedata[4]} {kundedata[6]}")      #Viser kundeprofil        
+        kundelabel.pack(pady = 100, side="left")                                                                                                                                        #Pakker det hele sammen. Vi velger også å vise kundedataene til venstre i visningsvinduet
 
         # Legger til en knapp for å generere faktura
         generate_invoice_button = tk.Button(details_window, text="Generer faktura", command=lambda: self.printPdf())    #Lager knapp som heter "Generer faktura" og kjører funksjonen printPdf()
