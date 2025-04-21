@@ -37,7 +37,7 @@ class GUI:
         buttons = {
             "Vis varer på lager": self.hentVarerPåLager,
             "Vis alle ordre": self.hentAlleOrdrer,
-            "Vis alle kunder": self.hentAlleKunder,
+            "Kunder": self.hentAlleKunder,
             "Avslutt": self.terminate
         }
         for i, (text, command) in enumerate(buttons.items()):                                       #For loop for å generere knappene på en enkel måte (Øyvind ville bare teste dette)
@@ -158,12 +158,35 @@ class GUI:
         pdfgen.generate_invoice(ordre,ordrelinjer,kunde,faktura_nummer)                                                                                                            #Genererer PDF med informasjon lagret i variablene over
     
     def hentAlleKunder(self):                                                                      #Funksjon for å se kundedb med stored procedures
-        self.tømTre()                                                                              #Kjører funksjonen for å tømme treet
-        self.oppdaterKolonner(("Kundenummer", "Fornavn", "Etternavn", "Adresse", "Post Nummer"))   #Oppdaterer kolonnene
+        #Lager nytt vindu for ordre detaljer
+        kunde_window = tk.Toplevel(self.root)                                                     #Lager popupvindu
+        kunde_window.title("Kunde")                                                               #Setter navn på popupvindu basert på ordrenummer
+        kunde_window.geometry("1000x400")                                                         #Setter størrelse på popupvinduet
+        #Knapper
+        LeggTilKunde = tk.Button(kunde_window, text="Legg til kunde", command=lambda: self.opprettKunde())  #Lager knapp som heter "Legg til kunde" og kjører funksjonen insert_kunde() i db.py
+        LeggTilKunde.pack(pady=10)                                                              
+        AdministrerKunde = tk.Button(kunde_window, text="Administrer kunde", command=lambda: self.administrerKundeVindu())  #Lager knapp som heter "Administrer kunde" og kjører funksjonen update_kunde() i db.py
+        AdministrerKunde.pack(pady=10) 
+                                                              
+        # Treeview ordredetaljer detaljer
+        self.kunde_tree = ttk.Treeview(kunde_window, show="headings")                                #Lager Treeview for å vise ordre detaljer
+        self.kunde_tree.pack(fill="both", expand=True, padx=10, pady=10, side="left")                  #Setter størrelse og plassering i GUI. 
+
+        # Legger til scrollbar for Treeview i nytt vindu
+        kunde_vsb = ttk.Scrollbar(kunde_window, orient="vertical", command=self.kunde_tree.yview)  #Lager Treeview for å vise ordre detaljer i nytt vindu
+        kunde_vsb.pack(side="right", fill="y")                                                    #Setter størrelse og plassering i GUI.
+        self.kunde_tree.configure(yscrollcommand=kunde_vsb.set)                                      #Kobler sammen treet og scrollbaren
+
+        # Henter kunder
+        self.kunde_tree["columns"] = ("Kundenummer", "Fornavn", "Etternavn", "Adresse", "Post Nummer")                     #Setter inn kolonner
+        for col in self.kunde_tree["columns"]:                                                         #for loop som den kjører gjennom
+            self.kunde_tree.heading(col, text=col)                                                     #Setter overskrift
+            self.kunde_tree.column(col, width=100, anchor="center")                                    #Forteller at kolonnen skal være 100px bred og midtstilt
+        
         data = self.db.call_procedure("hent_alle_kunder")                                          #Henter data fra databasen med følgende store procedures: "SELECT * FROM varehusdb.kunde;"
         for i in data:                                                                             #Henter dataene som ligger i variablen data
-            self.tree.insert("", "end", values=i)  
-            
+            self.kunde_tree.insert("", "end", values=i)  
+                     
     def omVindu(self):                                                                                                                  #Funksjon for å vise informasjon om programmet
         # Lager nytt vindu for å vise informasjon om programmet
         about_window = tk.Toplevel(self.root)                                                                                           #Lager popupvindu
@@ -173,5 +196,142 @@ class GUI:
         about_label.pack(pady=20)                                                                                                       #Setter plassering i vinduet
         close_button = tk.Button(about_window, text="Lukk", command=about_window.destroy)                                               #Lager lukkeknapp i vinduet    
         close_button.pack(padx=10)                                                                                                      #Setter lukkeknapp i vinduet
+
+    def administrerKundeVindu(self):                                                                      #Funksjon for å se kundedb med stored procedures
+        
+        selected_item = self.kunde_tree.selection()                                                       #Lagrer valget ditt (klikket ditt) i variablen selected_item
+        if not selected_item:                                                                       #En if statement som kjører dersom du ikke velger noe/klikker på et tomt element
+            messagebox.showwarning("Ingen valgt", "Vennligst velg en kunde.")
+            return                       #Ber bruker om å velge en ordre og kommer opp som en messagebox/varsel                                                          
+        
+        #Lager nytt vindu for ordre detaljer
+        self.kunde_window = tk.Toplevel(self.root)                                                     #Lager popupvindu
+        self.kunde_window.title("Kunde")                                                               #Setter navn på popupvindu basert på ordrenummer
+        self.kunde_window.geometry("1000x400") 
+        self.kunde_window.columnconfigure(0, minsize=5)
+        self.kunde_window.columnconfigure(1, weight=1)
+        self.kunde_window.rowconfigure(1, minsize=5)
+        self.kunde_window.rowconfigure(2, minsize=5)
+        self.kunde_window.rowconfigure(0, minsize=5)
+        self.kunde_window.rowconfigure(3, minsize=5)                                                                 #Setter størrelse på popupvinduet
+        self.kunde_window.rowconfigure(4, minsize=5)
+        self.kunde_window.rowconfigure(5, minsize=5)
+        self.kunde_window.rowconfigure(6, minsize=5)        
+
+        self.labelkundenummer = tk.Label(self.kunde_window, text="Kundenummer: ")                                                                 #Setter navn på labelen i vinduet
+        self.labelkundenummer.grid(row=0, column=0, padx=10, pady=10, sticky="e") 
+        self.kundenummer_box = tk.Entry(self.kunde_window)                                                                 #Lager entryboks for kundenummer
+        self.kundenummer_box.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")  
+        self.kundenummer_box.insert(0,self.kunde_tree.item(selected_item[0], "values")[0])                                                              #Pakker det hele sammen. Vi velger også å vise kundedataene til venstre i visningsvinduet
+        
+        self.labelFornavn = tk.Label(self.kunde_window, text="Fornavn: ")
+        self.labelFornavn.grid(row=1, column=0, padx=10, pady=10, sticky="e")                                                        #Setter størrelse på popupvinduet
+        self.fornavn_box = tk.Entry(self.kunde_window)                                                                 #Lager entryboks for fornavn
+        self.fornavn_box.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")  
+        self.fornavn_box.insert(0,self.kunde_tree.item(selected_item[0], "values")[1])                                                              #Pakker det hele sammen. Vi velger også å vise kundedataene til venstre i visningsvinduet
+        
+        self.labelEtternavn = tk.Label(self.kunde_window, text="Etternavn: ")
+        self.labelEtternavn.grid(row=2, column=0, padx=10, pady=10, sticky="e")
+        self.etternavn_box = tk.Entry(self.kunde_window)                                                                 #Lager entryboks for etternavn
+        self.etternavn_box.grid(row=2, column=1, padx=10, pady=10, sticky="nsew")                                                                 #Pakker det hele sammen. Vi velger også å vise kundedataene til venstre i visningsvinduet
+        self.etternavn_box.insert(0,self.kunde_tree.item(selected_item[0], "values")[2] )                                                              #Pakker det hele sammen. Vi velger også å vise kundedataene til venstre i visningsvinduet
+        
+        self.labelAdresse = tk.Label(self.kunde_window, text="Adresse: ")
+        self.labelAdresse.grid(row=3, column=0, padx=10, pady=10, sticky="e")
+        self.addresse_box = tk.Entry(self.kunde_window)                                                                 #Lager entryboks for adresse
+        self.addresse_box.grid(row=3, column=1, padx=10, pady=10, sticky="nsew")                                                                #Pakker det hele sammen. Vi velger også å vise kundedataene til venstre i visningsvinduet
+        self.addresse_box.insert(0,self.kunde_tree.item(selected_item[0], "values")[3])                                                              #Pakker det hele sammen. Vi velger også å vise kundedataene til venstre i visningsvinduet
+        
+        self.laberlPostnr = tk.Label(self.kunde_window, text="Postnummer: ")
+        self.laberlPostnr.grid(row=4, column=0, padx=10, pady=10, sticky="e")                                                        #Setter størrelse på popupvinduet
+        self.postnr_box = tk.Entry(self.kunde_window)                                                                 #Lager entryboks for postnummer
+        self.postnr_box.grid(row=4, column=1, padx=10, pady=10, sticky="nsew")                                                                 #Pakker det hele sammen. Vi velger også å vise kundedataene til venstre i visningsvinduet
+        self.postnr_box.insert(0,self.kunde_tree.item(selected_item[0], "values")[4] )                                                              #Pakker det hele sammen. Vi velger også å vise kundedataene til venstre i visningsvinduet
+        
+        self.SlettKunde = tk.Button(self.kunde_window, text="Slett kunde", bg="red", fg="white", command=lambda: self.slettKunde())  #Lager knapp som heter "Slett kunde" og kjører funksjonen delete_kunde() i db.py
+        self.SlettKunde.grid(row=6, column=0, padx=10, pady=10, sticky="nsew")
+
+        self.lagreKunde = tk.Button(self.kunde_window, text="Lagre kunde", command=lambda: self.oppdaterKundeiDb())  #Lager knapp som heter "Lagre kunde" og kjører funksjonen insert_kunde() i db.py
+        self.lagreKunde.grid(row=6, column=1, padx=10, pady=10, sticky="nsew")                                                                 #Pakker det hele sammen. Vi velger også å vise kundedataene til venstre i visningsvinduet
+
+    def oppdaterKundeiDb(self):  #Lager knapp som heter "Lagre kunde" og kjører funksjonen insert_kunde() i db.py
+        self.db.update_one("UPDATE kunde SET Fornavn = %s, Etternavn = %s, Adresse = %s, PostNr = %s WHERE KNr = %s;", (self.fornavn_box.get(), self.etternavn_box.get(), self.addresse_box.get(), self.postnr_box.get(), self.kundenummer_box.get()))  #Lager entryboks for fornavn
+        #print(f"UPDATE kunde SET Fornavn = {self.fornavn_box.get()}, Etternavn = {self.etternavn_box.get()}, Adresse = {self.addresse_box.get()}, PostNr = {self.postnr_box.get()} WHERE KNr = {self.kundenummer_box.get()};")  #Lager entryboks for fornavn
+
+        self.kunde_tree.delete(*self.kunde_tree.get_children())  # Tømmer kunde_tree før oppdatering
+        # Henter kunder
+        self.kunde_tree["columns"] = ("Kundenummer", "Fornavn", "Etternavn", "Adresse", "Post Nummer")                     #Setter inn kolonner
+        for col in self.kunde_tree["columns"]:                                                         #for loop som den kjører gjennom
+            self.kunde_tree.heading(col, text=col)                                                     #Setter overskrift
+            self.kunde_tree.column(col, width=100, anchor="center")                                    #Forteller at kolonnen skal være 100px bred og midtstilt
+        
+        data = self.db.call_procedure("hent_alle_kunder")                                          #Henter data fra databasen med følgende store procedures: "SELECT * FROM varehusdb.kunde;"
+        for i in data:                                                                             #Henter dataene som ligger i variablen data
+            self.kunde_tree.insert("", "end", values=i)  
+        
+        #slette kunde
+        self.slettKunde(self)
+        self.kunde_window.destroy()                                                                 #Lukker vinduet etter oppdatering
+
+    def opprettKunde(self):                                                                      #Funksjon for å se kundedb med stored procedures
+
+        #Lager nytt vindu for ordre detaljer
+        self.kunde_window = tk.Toplevel(self.root)                                                     #Lager popupvindu
+        self.kunde_window.title("Kunde")                                                               #Setter navn på popupvindu basert på ordrenummer
+        self.kunde_window.geometry("1000x400") 
+        self.kunde_window.columnconfigure(0, minsize=5)
+        self.kunde_window.columnconfigure(1, weight=1)
+        self.kunde_window.rowconfigure(1, minsize=5)
+        self.kunde_window.rowconfigure(2, minsize=5)
+        self.kunde_window.rowconfigure(0, minsize=5)
+        self.kunde_window.rowconfigure(3, minsize=5)                                                                 #Setter størrelse på popupvinduet
+        self.kunde_window.rowconfigure(4, minsize=5)
+        self.kunde_window.rowconfigure(5, minsize=5)
+        self.kunde_window.rowconfigure(6, minsize=5)        
+
+                                                                      #Pakker det hele sammen. Vi velger også å vise kundedataene til venstre i visningsvinduet
+        self.labelFornavn = tk.Label(self.kunde_window, text="Fornavn: ")
+        self.labelFornavn.grid(row=1, column=0, padx=10, pady=10, sticky="e")                                                        #Setter størrelse på popupvinduet
+        self.fornavn_box = tk.Entry(self.kunde_window)                                                                 #Lager entryboks for fornavn
+        self.fornavn_box.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")  
+                                                                      #Pakker det hele sammen. Vi velger også å vise kundedataene til venstre i visningsvinduet
+        self.labelEtternavn = tk.Label(self.kunde_window, text="Etternavn: ")
+        self.labelEtternavn.grid(row=2, column=0, padx=10, pady=10, sticky="e")
+        self.etternavn_box = tk.Entry(self.kunde_window,text="Etternavn")                                                                 #Lager entryboks for etternavn
+        self.etternavn_box.grid(row=2, column=1, padx=10, pady=10, sticky="nsew")                                                                 #Pakker det hele sammen. Vi velger også å vise kundedataene til venstre i visningsvinduet
+        
+        self.labelAdresse = tk.Label(self.kunde_window, text="Adresse: ")
+        self.labelAdresse.grid(row=3, column=0, padx=10, pady=10, sticky="e")
+        self.addresse_box = tk.Entry(self.kunde_window)                                                                 #Lager entryboks for adresse
+        self.addresse_box.grid(row=3, column=1, padx=10, pady=10, sticky="nsew")                                                                #Pakker det hele sammen. Vi velger også å vise kundedataene til venstre i visningsvinduet
+        
+        self.laberlPostnr = tk.Label(self.kunde_window, text="Postnummer: ")
+        self.laberlPostnr.grid(row=4, column=0, padx=10, pady=10, sticky="e")                                                        #Setter størrelse på popupvinduet
+        self.postnr_box = tk.Entry(self.kunde_window)                                                                 #Lager entryboks for postnummer
+        self.postnr_box.grid(row=4, column=1, padx=10, pady=10, sticky="nsew")                                                                 #Pakker det hele sammen. Vi velger også å vise kundedataene til venstre i visningsvinduet
+        
+        self.lagreKunde = tk.Button(self.kunde_window, text="Lagre kunde", command=lambda: self.lagreKundeiDb())  #Lager knapp som heter "Lagre kunde" og kjører funksjonen insert_kunde() i db.py
+        self.lagreKunde.grid(row=6, column=1, padx=10, pady=10, sticky="nsew")
+
+    def lagreKundeiDb(self):  #Lager knapp som heter "Lagre kunde" og kjører funksjonen insert_kunde() i db.py
+        self.db.insert_kunde(self.fornavn_box.get(), self.etternavn_box.get(), self.addresse_box.get(), self.postnr_box.get())  #Lager entryboks for fornavn
+
+    def slettKunde(self):                                                                      #Funksjon for å se kundedb med stored procedures
+
+        if messagebox.askyesnocancel("Er du helt sikker?"):                               #Oppretter messagebox
+            self.db.update_one("UPDATE kunde SET is_active = '0' WHERE KNr = %s;", (self.kundenummer_box.get(),))                     #Oppdaterer databasen med slettingen av kundenummeret som er valgt i treeviewen.
+            self.kunde_tree.delete(*self.kunde_tree.get_children())  # Tømmer kunde_tree før oppdatering
+            # Henter kunder
+            self.kunde_tree["columns"] = ("Kundenummer", "Fornavn", "Etternavn", "Adresse", "Post Nummer")                     #Setter inn kolonner
+            for col in self.kunde_tree["columns"]:                                                         #for loop som den kjører gjennom
+                self.kunde_tree.heading(col, text=col)                                                     #Setter overskrift
+                self.kunde_tree.column(col, width=100, anchor="center")                                    #Forteller at kolonnen skal være 100px bred og midtstilt
+            
+            data = self.db.call_procedure("hent_alle_kunder")                                          #Henter data fra databasen med følgende store procedures: "SELECT * FROM varehusdb.kunde;"
+            for i in data:                                                                             #Henter dataene som ligger i variablen data
+                self.kunde_tree.insert("", "end", values=i)  
+            
+
+            self.kunde_window.destroy()
 
 GUI()  #Starter GUI
