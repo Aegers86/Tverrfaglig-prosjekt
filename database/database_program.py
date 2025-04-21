@@ -76,3 +76,28 @@ class Database:
         cursor.close()
         self.close()
         return faktura_id
+    
+    def update_one(self, query, params):
+        self.connect()
+        cursor = self.db.cursor()
+        cursor.execute(query, params)
+        self.db.commit()
+        cursor.close()
+        self.close()
+
+    def insert_kunde(self, Fornavn, Etternavn, Adresse, Postnr):
+        self.connect()
+        cursor = self.db.cursor()
+        cursor.execute("SELECT MAX(KNr) FROM kunde")
+        result = cursor.fetchone()
+        max_kNr = result[0] if result[0] is not None else 0
+        kNr = max_kNr + 1
+
+        insert_query = """
+        INSERT INTO kunde (KNr, Fornavn, Etternavn, Adresse, Postnr) VALUES (%s, %s, %s, %s, %s)
+        """
+        cursor.execute(insert_query, (kNr, Fornavn, Etternavn, Adresse, Postnr))
+        #print(f"Inserted Kunde with kNr: {kNr}")
+        self.db.commit()
+        cursor.close()
+        self.close()
