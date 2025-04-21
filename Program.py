@@ -105,7 +105,7 @@ class GUI:
         details_window.title(f"Ordre detaljer - OrdreNr: {ordreNr}")                                #Setter navn på popupvindu basert på ordrenummer
         details_window.geometry("1000x400")                                                         #Setter størrelse på popupvinduet
 
-        # Legge til ordreinfo
+        # Legge til kundeinfo i ordrevindu
         kundenummer = self.tree.item(selected_item[0], "values")[4]                                                                                                                     #Variabel for å lagre brukervalg i ordre
         kundedata = self.db.fetch_one("SELECT * ,Poststed.Poststed FROM kunde inner join Poststed on Kunde.PostNr = Poststed.PostNr WHERE KNr = %s;", (kundenummer,))                   #Variabel som lagrer resultat fra SQL-spørring. Her skal vi vise adresse til kunde og må koble sammen postnummer og poststed for å få riktig visning slik vi vil ha det. Dette gjør vi med inner join og henter fra to tabeller "poststed" og "kunde".    
         kundelabel = tk.Label(details_window, text = f"Kundenummer: {kundedata[0]}\nNavn: {kundedata[1]} {kundedata[2]}\n Adresse: {kundedata[3]}, {kundedata[4]} {kundedata[6]}")      #Viser kundeprofil        
@@ -125,15 +125,22 @@ class GUI:
         details_tree.configure(yscrollcommand=details_vsb.set)                                      #Kobler sammen treet og scrollbaren
 
         # Henter data for ordre detaljer
-        details_tree["columns"] = ("Ordrenummer", "Varenummer", "Enhetspris", "Antall")             #Setter inn kolonner
+        details_tree["columns"] = ("Varenummer", "Enhetspris", "Antall", "Sum")                     #Setter inn kolonner
         for col in details_tree["columns"]:                                                         #for loop som den kjører gjennom
             details_tree.heading(col, text=col)                                                     #Setter overskrift
             details_tree.column(col, width=100, anchor="center")                                    #Forteller at kolonnen skal være 100px bred og midtstilt
         
-        data = self.db.fetch_all("SELECT * FROM ordrelinje WHERE OrdreNr = %s;", (ordreNr,))        #Henter fra ordrenummer variabelen ordrenummer og er beskyttet mot SQL injeksjon
-        for i in data:                                                                              #Henter dataene som ligger i data
-            details_tree.insert("", "end", values=i)                                                #Legger til verdiene som er hentet fra databasen
+        data = self.db.fetch_all("SELECT VNr, PrisPrEnhet, Antall, PrisPrEnhet*Antall as Sum FROM ordrelinje WHERE OrdreNr = %s;", (ordreNr,))        #Henter fra ordrenummer variabelen ordrenummer og er beskyttet mot SQL injeksjon
+        for i in data:                                                                                                                                #Henter dataene som ligger i data
+            details_tree.insert("", "end", values=i)                                                                                                  #Legger til verdiene som er hentet fra databasen
  
+        #Legge til label for totalsum
+        Totalsum = 0                                                                                #Variabel som lages for å ha en plass å lagre informasjon i forloopen
+        for i in data:                                                                              #Forloop for å velge alle elementene i ordren
+            Totalsum += i[3]                                                                        #Kode for å gå gjennom elementene i kolonnen sum (den 4 kolonnen, den skrives som 3 da det telles fra 0) og legge dem sammen
+        Totalsumlabel = tk.Label(details_window, text = f"Totalsum: {Totalsum}")                    #Her lager vi label som vi kaller Totalsumlabel, den viser innholdet i utregningen over
+        Totalsumlabel.pack(pady = 100)                                                              #Her definierer vi hvor labelen skal være i visningsvinduet
+
     def printPdf(self):                                                                             #Funksjon for å printe PDF faktura - valgfri oppgave. 
         selected_item = self.tree.selection()                                                       #Variabel for å lagre valget brukeren gjør
         if not selected_item:                                                                       #If statement som kjører hvis man ikke har valgt noe
