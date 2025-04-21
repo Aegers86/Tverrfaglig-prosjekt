@@ -62,3 +62,17 @@ class Database:
         cursor.close()
         self.close()
         return results
+    
+    def insert_faktura(self, ordreNr, kNr):
+        self.connect()
+        cursor = self.db.cursor()
+        insert_query = """
+        INSERT INTO faktura (OrdreNr, KNr)
+        VALUES (%s, %s)
+        """
+        cursor.execute(insert_query, (ordreNr, kNr))
+        self.db.commit()
+        faktura_id = cursor.lastrowid
+        cursor.close()
+        self.close()
+        return faktura_id

@@ -5,7 +5,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 import os
 
 class PDFGenerator:
-    def generate_invoice(self, ordre, ordrelinjer, kunde):
+    def generate_invoice(self, ordre, ordrelinjer, kunde, faktura_nummer):
         pdf_filename = f"faktura_{ordre[0]}.pdf"
         doc = SimpleDocTemplate(pdf_filename, pagesize=A4)
         elements = []
@@ -20,6 +20,7 @@ class PDFGenerator:
 
         # **Customer Information**
         customer_info = f"""
+        <b>Fakturanummer:</b> {faktura_nummer}<br/>
         <b>Kunde:</b> {kunde[1]} {kunde[2]}<br/>
         <b>Adresse:</b> {kunde[3]}, {kunde[4]}<br/>
         """
