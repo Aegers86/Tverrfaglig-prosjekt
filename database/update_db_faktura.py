@@ -33,14 +33,19 @@ class Database:
         cursor = self.db.cursor()
 
         #SQL-spørring for å opprette faktura-tabellen
+        #Tabellen har kolonnene id, OrdreNr, KNr og dato.
+        #id er en auto-increment primærnøkkel, OrdreNr og KNr er utenlandsk nøkkel som refererer til ordre og kunde-tabellene.
+        #dato er en datetime-kolonne som får standardverdien til å være nåværende tidspunkt.
+        #Tabellen opprettes kun hvis den ikke allerede eksisterer.
+
         create_table_query = """
         CREATE TABLE IF NOT EXISTS faktura (
             id INT AUTO_INCREMENT PRIMARY KEY,
             OrdreNr INT NOT NULL,
             KNr INT NOT NULL,
             dato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (KNr) REFERENCES kunde(KNr) ON DELETE CASCADE ON UPDATE CASCADE,
-            FOREIGN KEY (OrdreNr) REFERENCES ordre(OrdreNr) ON DELETE CASCADE ON UPDATE CASCADE
+            FOREIGN KEY (KNr) REFERENCES kunde(KNr),
+            FOREIGN KEY (OrdreNr) REFERENCES ordre(OrdreNr),
         )
         """
         cursor.execute(create_table_query)
