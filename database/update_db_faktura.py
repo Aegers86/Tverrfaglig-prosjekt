@@ -45,7 +45,7 @@ class Database:
             KNr INT NOT NULL,
             dato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (KNr) REFERENCES kunde(KNr),
-            FOREIGN KEY (OrdreNr) REFERENCES ordre(OrdreNr),
+            FOREIGN KEY (OrdreNr) REFERENCES ordre(OrdreNr)
         )
         """
         cursor.execute(create_table_query)
