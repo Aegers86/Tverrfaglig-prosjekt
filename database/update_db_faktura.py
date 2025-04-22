@@ -65,6 +65,9 @@ class Database:
         self.db.commit()
         cursor.close()
 
+#oppdater stored procedure for å oppdatere kunde-tabellen
+#SELECT * FROM varehusdb.kunde WHERE is_active = 1;
+
 if __name__ == "__main__":
     #Lager en instans av Database-klassen og oppretter faktura-tabellen
     db_instance = Database()
