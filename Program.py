@@ -278,7 +278,7 @@ class GUI:
         #Lager nytt vindu for ordre detaljer
         self.kunde_window = tk.Toplevel(self.root)                                                     #Lager popupvindu
         self.kunde_window.title("Kunde")                                                               #Setter navn på popupvindu basert på ordrenummer
-        self.kunde_window.geometry("1000x400") 
+        self.kunde_window.geometry("1080x400") 
         self.kunde_window.columnconfigure(0, minsize=5)
         self.kunde_window.columnconfigure(1, weight=1)
         self.kunde_window.rowconfigure(1, minsize=5)
@@ -297,7 +297,7 @@ class GUI:
                                                                       #Pakker det hele sammen. Vi velger også å vise kundedataene til venstre i visningsvinduet
         self.labelEtternavn = tk.Label(self.kunde_window, text="Etternavn: ")
         self.labelEtternavn.grid(row=2, column=0, padx=10, pady=10, sticky="e")
-        self.etternavn_box = tk.Entry(self.kunde_window,text="Etternavn")                                                                 #Lager entryboks for etternavn
+        self.etternavn_box = tk.Entry(self.kunde_window)                                                                 #Lager entryboks for etternavn
         self.etternavn_box.grid(row=2, column=1, padx=10, pady=10, sticky="nsew")                                                                 #Pakker det hele sammen. Vi velger også å vise kundedataene til venstre i visningsvinduet
         
         self.labelAdresse = tk.Label(self.kunde_window, text="Adresse: ")
@@ -312,9 +312,21 @@ class GUI:
         
         self.lagreKunde = tk.Button(self.kunde_window, text="Lagre kunde", command=lambda: self.lagreKundeiDb())  #Lager knapp som heter "Lagre kunde" og kjører funksjonen insert_kunde() i db.py
         self.lagreKunde.grid(row=6, column=1, padx=10, pady=10, sticky="nsew")
-
+                                                                        
     def lagreKundeiDb(self):  #Lager knapp som heter "Lagre kunde" og kjører funksjonen insert_kunde() i db.py
         self.db.insert_kunde(self.fornavn_box.get(), self.etternavn_box.get(), self.addresse_box.get(), self.postnr_box.get())  #Lager entryboks for fornavn
+        self.kunde_window.destroy()                                                         
+        self.kunde_tree.delete(*self.kunde_tree.get_children())  # Tømmer kunde_tree før oppdatering
+        # Henter kunder
+        self.kunde_tree["columns"] = ("Kundenummer", "Fornavn", "Etternavn", "Adresse", "Post Nummer")                     #Setter inn kolonner
+        for col in self.kunde_tree["columns"]:                                                         #for loop som den kjører gjennom
+            self.kunde_tree.heading(col, text=col)                                                     #Setter overskrift
+            self.kunde_tree.column(col, width=100, anchor="center")                                    #Forteller at kolonnen skal være 100px bred og midtstilt
+        
+        data = self.db.call_procedure("hent_alle_kunder")                                          #Henter data fra databasen med følgende store procedures: "SELECT * FROM varehusdb.kunde;"
+        for i in data:                                                                             #Henter dataene som ligger i variablen data
+            self.kunde_tree.insert("", "end", values=i) 
+
 
     def slettKunde(self):                                                                      #Funksjon for å se kundedb med stored procedures
 
