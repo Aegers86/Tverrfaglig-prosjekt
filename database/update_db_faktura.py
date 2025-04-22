@@ -69,7 +69,12 @@ class Database:
 
 #oppdater stored procedure for å oppdatere kunde-tabellen
 #SELECT * FROM varehusdb.kunde WHERE is_active = 1;
-
+"""
+CREATE DEFINER=`root`@`localhost` PROCEDURE `hent_alle_kunder`()
+BEGIN
+SELECT * FROM varehusdb.kunde WHERE is_active = 1;
+END
+"""
 if __name__ == "__main__":
     #Lager en instans av Database-klassen og oppretter faktura-tabellen
     db_instance = Database()
