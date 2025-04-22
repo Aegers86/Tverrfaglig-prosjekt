@@ -1,198 +1,214 @@
 # gui/kunde_vindu.py
 import tkinter as tk
-from tkinter import ttk
-from utils.validators import valider_kundefelter # Antar denne finnes og er korrekt
-from utils.feedback import vis_feil, vis_advarsel # Antar denne finnes og er korrekt
+from tkinter import ttk, messagebox # Importer messagebox
+# Sørg for at disse utils-filene finnes og er korrekte
+try:
+    from utils.validators import valider_kundefelter
+    from utils.feedback import vis_feil, vis_advarsel
+except ImportError:
+    # Fallback hvis utils ikke finnes
+    import logging
+    logging.error("Kunne ikke importere utils-moduler. Bruker messagebox direkte.")
+    def valider_kundefelter(verdier): return [] # Returner ingen feil som standard
+    def vis_feil(tittel, melding): messagebox.showerror(tittel, melding)
+    def vis_advarsel(tittel, melding): messagebox.showwarning(tittel, melding)
+
 import logging # Importer logging
 
-# --- Start på korrigert funksjon ---
-def vis_kunder(main_window):
-    main_window.oppdater_navigasjon(["Hoved", "Kunder"])
-    main_window.status_label.config(text="Laster kunder...")
-    main_window.rydd_innhold()
+# --- Hjelpefunksjon for kundesøk ---
+def _perform_customer_search(main_window, search_entry, tree):
+    """ Henter kunder basert på søketerm og oppdaterer Treeview. """
+    search_term = search_entry.get().strip()
+    status_msg = f"Søker etter kunde '{search_term}'..." if search_term else "Laster alle kunder..."
+    main_window.status_label.config(text=status_msg)
+    logging.info(status_msg)
+
+    # Tømmer treet før nytt søk/oppdatering
+    try:
+        for i in tree.get_children():
+            tree.delete(i)
+    except tk.TclError as e:
+        logging.warning(f"Feil ved tømming av Kunde-Treeview (ignorerer): {e}")
 
     try:
-        # ENDRET: Erstatter prosedyrekall med direkte SQL-spørring
-        # Henter kolonner som matcher Treeview (juster hvis Telefon/Epost finnes/ikke finnes)
-        # Bruker kolonnenavn fra varehusdb.sql
-        query = """
-            SELECT KNr, Fornavn, Etternavn, Adresse, PostNr
-            FROM kunde
-            ORDER BY Etternavn ASC, Fornavn ASC;
+        # Basis-spørring - hent kolonner som trengs for visning
+        base_query = "SELECT KNr, Fornavn, Etternavn, Adresse, PostNr FROM kunde"
+        where_clause = ""
+        params = []
+
+        if search_term:
+            search_pattern = f"%{search_term}%"
+            # Søker i KNr (som tekst), Fornavn, Etternavn, og fullt navn
+            where_clause = """
+                WHERE CAST(KNr AS CHAR) LIKE %s
+                   OR Fornavn LIKE %s
+                   OR Etternavn LIKE %s
+                   OR CONCAT(Fornavn, ' ', Etternavn) LIKE %s
             """
-        # Bruker nå hent_alle i stedet for kall_prosedyre
-        data = main_window.db.hent_alle(query)
+            params = [search_pattern] * 4
+
+        final_query = base_query + where_clause + " ORDER BY Etternavn ASC, Fornavn ASC;"
+
+        data = main_window.db.hent_alle(final_query, tuple(params))
+
+        data_length = 0
+        if data:
+            for row in data:
+                tree.insert("", "end", values=row)
+                data_length += 1
+
+        if search_term:
+             status_text = f"Søkeresultat for '{search_term}': {data_length} kunder funnet."
+        else:
+             status_text = f"Alle kunder ({data_length} stk) lastet."
+        main_window.status_label.config(text=status_text)
+        logging.info(status_text)
 
     except Exception as e:
-        # Logg feilen
-        logging.error(f"Feil ved henting av kunder for GUI: {e}", exc_info=True)
-        vis_feil("Databasefeil", f"Feil ved henting av kunder: {e}")
-        main_window.status_label.config(text="Feil ved lasting av kunder")
-        return # Avslutt hvis data ikke kan hentes
+        logging.error(f"Feil under kundesøk etter '{search_term}': {e}", exc_info=True)
+        vis_feil("Databasefeil", f"Feil under søk etter kunder: {e}")
+        main_window.status_label.config(text="Feil under kundesøk")
 
-    # Sett opp Treeview
+
+# --- Start på komplett vis_kunder (med søkefelt og UTEN bunn-knapp) ---
+def vis_kunder(main_window):
+    """ Viser kundeoversikten med søkefunksjonalitet. """
+    main_window.oppdater_navigasjon(["Hoved", "Kunder"])
+    main_window.status_label.config(text="Laster inn kundevisning...")
+    main_window.rydd_innhold()
+
+    # --- Ramme for søkefunksjonalitet ---
+    search_frame = tk.Frame(main_window.innhold_frame)
+    search_frame.pack(fill="x", padx=10, pady=(5, 0))
+
+    tk.Label(search_frame, text="Søk (Kundenr, Navn):").pack(side="left", padx=(0, 5))
+    search_entry = tk.Entry(search_frame)
+    search_entry.pack(side="left", fill="x", expand=True, padx=5)
+
+    # Treeview må defineres FØR knappen som bruker den i command
     tree = ttk.Treeview(main_window.innhold_frame, show="headings")
 
-    # Definer kolonner BASERT PÅ SPØRRINGEN over (og det som finnes i db)
-    # Hvis du *har* Telefon og Epost i din faktiske kunde-tabell, legg dem til her
-    # og i SELECT-spørringen over. Hvis ikke, fjern dem herfra.
-    tree_columns = ("Kundenummer", "Fornavn", "Etternavn", "Adresse", "Postnummer") # Fjernet Telefon, E-post
+    search_button = tk.Button(search_frame, text="Søk",
+                              command=lambda: _perform_customer_search(main_window, search_entry, tree))
+    search_button.pack(side="left", padx=(5, 0))
+    search_entry.bind("<Return>", lambda event: _perform_customer_search(main_window, search_entry, tree))
+    # --- Slutt på søkeramme ---
+
+
+    # --- Sett opp Treeview ---
+    tree_columns = ("Kundenummer", "Fornavn", "Etternavn", "Adresse", "Postnummer")
     tree["columns"] = tree_columns
 
-    # Sett kolonneoverskrifter og bredde
-    tree.heading("Kundenummer", text="KNr") # Bruk KNr som i databasen
-    tree.column("Kundenummer", width=80, anchor="center")
-    tree.heading("Fornavn", text="Fornavn")
-    tree.column("Fornavn", width=120, anchor="w")
-    tree.heading("Etternavn", text="Etternavn")
-    tree.column("Etternavn", width=120, anchor="w")
-    tree.heading("Adresse", text="Adresse")
-    tree.column("Adresse", width=200, anchor="w")
-    tree.heading("Postnummer", text="PostNr")
-    tree.column("Postnummer", width=80, anchor="center")
-    # Hvis du legger til Telefon/Epost, legg til heading/column her også
-
-    # Fyll inn data
-    if data: # Sjekk om data faktisk ble hentet
-        for row in data:
-            # Pass på at values har like mange elementer som tree["columns"]
-            tree.insert("", "end", values=row)
-    else:
-        # Vis en melding hvis ingen data ble funnet?
-        pass # Eller tk.Label(...)
+    tree.heading("Kundenummer", text="KNr"); tree.column("Kundenummer", width=80, anchor="center")
+    tree.heading("Fornavn", text="Fornavn"); tree.column("Fornavn", width=120, anchor="w")
+    tree.heading("Etternavn", text="Etternavn"); tree.column("Etternavn", width=120, anchor="w")
+    tree.heading("Adresse", text="Adresse"); tree.column("Adresse", width=200, anchor="w")
+    tree.heading("Postnummer", text="PostNr"); tree.column("Postnummer", width=80, anchor="center")
 
     tree.pack(fill="both", expand=True, padx=10, pady=10)
 
-    # Knapper
+    # --- Knapper under Treeview ---
     knapp_frame = tk.Frame(main_window.innhold_frame)
     knapp_frame.pack(pady=5)
+
     tk.Button(knapp_frame, text="Legg til kunde", command=lambda: nytt_kundevindu(main_window)).pack(side="left", padx=5)
-    # TODO: Funksjonaliteten til rediger_kunde må også tilpasses hvis Telefon/Epost er fjernet/endret
     tk.Button(knapp_frame, text="Rediger valgt", command=lambda: rediger_kunde(main_window, tree)).pack(side="left", padx=5)
 
-    main_window.status_label.config(text="Kunder lastet.")
-# --- Slutt på korrigert funksjon ---
+    # --- FJERNET KNAPP HER ---
+    # tk.Button(knapp_frame, text="Til Hovedmeny", command=main_window.vis_startside).pack(side="left", padx=5)
+
+    # --- Last inn alle kunder initielt ---
+    _perform_customer_search(main_window, search_entry, tree)
+
+# --- Slutt på komplett vis_kunder ---
 
 
-# --- Resten av filen (inkludert nytt_kundevindu, rediger_kunde, lag_kundefelter) ---
-# Disse må kanskje også justeres hvis Telefon/Epost mangler i databasen
-# eller hvis kolonneindeksene i 'data' har endret seg i rediger_kunde.
-
+# --- nytt_kundevindu, rediger_kunde, lag_kundefelter (som før, husk Telefon/Epost justeringer) ---
+# Disse funksjonene er uendret fra forrige versjon
 def nytt_kundevindu(main_window):
+    """ Viser vindu for å legge til ny kunde. """
     main_window.oppdater_navigasjon(["Hoved", "Kunder", "Ny kunde"])
     main_window.rydd_innhold()
-
-    # VIKTIG: Pass på at felter her matcher det sett_inn_kunde forventer
-    # og det som finnes i databasen.
+    main_window.status_label.config(text="Legg til ny kunde")
     felter = lag_kundefelter(main_window.innhold_frame)
-
     def lagre():
-        verdier = {k: v.get() for k, v in felter.items()}
-        # VIKTIG: valider_kundefelter må kanskje justeres hvis Telefon/Epost ikke er obligatorisk/finnes
+        verdier = {k: v.get().strip() for k, v in felter.items()}
         feil = valider_kundefelter(verdier)
         if feil:
             vis_advarsel("Valideringsfeil", "\n".join(feil))
             return
         try:
-            # Pass på at argumentene her matcher sett_inn_kunde i database_handler
-            # og kolonnene i databasen (f.eks., mangler Telefon/Epost?)
             main_window.db.sett_inn_kunde(
-                verdier["fornavn"],
-                verdier["etternavn"],
-                verdier["adresse"],
-                verdier["postnr"],
-                verdier.get("telefon", None), # Bruk .get med default hvis de kan mangle
-                verdier.get("epost", None)
+                verdier["fornavn"], verdier["etternavn"], verdier["adresse"],
+                verdier["postnr"], verdier.get("telefon"), verdier.get("epost")
             )
-            vis_kunder(main_window) # Gå tilbake til kundeoversikten
+            logging.info(f"Ny kunde lagret: {verdier.get('fornavn')} {verdier.get('etternavn')}")
+            vis_kunder(main_window)
         except Exception as e:
             logging.error(f"Feil ved lagring av ny kunde: {e}", exc_info=True)
             vis_feil("Feil", f"Klarte ikke å lagre kunde: {e}")
-
-    tk.Button(main_window.innhold_frame, text="Lagre", command=lagre).pack(pady=10)
-    tk.Button(main_window.innhold_frame, text="Tilbake", command=lambda: vis_kunder(main_window)).pack(pady=5)
+    knapp_frame_ny = tk.Frame(main_window.innhold_frame)
+    knapp_frame_ny.pack(pady=10)
+    tk.Button(knapp_frame_ny, text="Lagre", command=lagre).pack(side="left", padx=5)
+    tk.Button(knapp_frame_ny, text="Tilbake", command=lambda: vis_kunder(main_window)).pack(side="left", padx=5)
 
 def rediger_kunde(main_window, tree):
-    valgt = tree.selection()
-    if not valgt:
-        vis_advarsel("Ingen valgt", "Velg en kunde først.")
+    """ Viser vindu for å redigere valgt kunde. """
+    selected_item = tree.selection()
+    if not selected_item:
+        vis_advarsel("Ingen valgt", "Velg en kunde fra listen for å redigere.")
         return
-    # Henter data fra den valgte raden i Treeview
-    data = tree.item(valgt[0], "values")
-
-    # VIKTIG: Indeksene i 'data' her må matche rekkefølgen i SELECT-spørringen
-    # og kolonnene i Treeview i vis_kunder. data[0] er KNr.
-    if not data:
-        vis_feil("Feil", "Kunne ikke hente data for valgt kunde.")
+    try:
+        data = tree.item(selected_item[0], "values")
+        if not data or len(data) < 1: raise ValueError("Mangler data i valgt rad")
+        knr_for_redigering = int(data[0])
+    except (ValueError, TypeError, IndexError) as e:
+        logging.error(f"Kunne ikke hente data for redigering fra Treeview: {e}", exc_info=True)
+        vis_feil("Feil", "Kunne ikke hente data for valgt kunde fra listen.")
         return
-
-    knr_for_redigering = data[0]
     main_window.oppdater_navigasjon(["Hoved", "Kunder", f"Rediger kunde {knr_for_redigering}"])
     main_window.rydd_innhold()
-
-    # Sender data til felt-oppretteren. Pass på rekkefølgen!
-    # Hvis Telefon/Epost ble fjernet fra vis_kunder, må 'data' her justeres.
-    felter = lag_kundefelter(main_window.innhold_frame, data) # data sendes med
-
+    main_window.status_label.config(text=f"Redigerer kunde {knr_for_redigering}")
+    felter = lag_kundefelter(main_window.innhold_frame, data)
     def lagre():
-        verdier = {k: v.get() for k, v in felter.items()}
-        # VIKTIG: valider_kundefelter må kanskje justeres
+        verdier = {k: v.get().strip() for k, v in felter.items()}
         feil = valider_kundefelter(verdier)
         if feil:
             vis_advarsel("Valideringsfeil", "\n".join(feil))
             return
         try:
-            # Pass på at argumentene matcher oppdater_kunde i database_handler
-            # og kolonnene i databasen.
             main_window.db.oppdater_kunde(
-                knr_for_redigering, # Send med kundenummeret
-                verdier["fornavn"],
-                verdier["etternavn"],
-                verdier["adresse"],
-                verdier["postnr"],
-                verdier.get("telefon", None), # Bruk .get med default hvis de kan mangle
-                verdier.get("epost", None)
+                knr_for_redigering, verdier["fornavn"], verdier["etternavn"],
+                verdier["adresse"], verdier["postnr"], verdier.get("telefon"),
+                verdier.get("epost")
             )
-            vis_kunder(main_window) # Gå tilbake til kundeoversikten
+            logging.info(f"Kunde {knr_for_redigering} oppdatert.")
+            vis_kunder(main_window)
         except Exception as e:
             logging.error(f"Feil ved oppdatering av kunde {knr_for_redigering}: {e}", exc_info=True)
             vis_feil("Feil", f"Klarte ikke å oppdatere kunde: {e}")
-
-    tk.Button(main_window.innhold_frame, text="Lagre", command=lagre).pack(pady=10)
-    tk.Button(main_window.innhold_frame, text="Tilbake", command=lambda: vis_kunder(main_window)).pack(pady=5)
+    knapp_frame_edit = tk.Frame(main_window.innhold_frame)
+    knapp_frame_edit.pack(pady=10)
+    tk.Button(knapp_frame_edit, text="Lagre endringer", command=lagre).pack(side="left", padx=5)
+    tk.Button(knapp_frame_edit, text="Tilbake", command=lambda: vis_kunder(main_window)).pack(side="left", padx=5)
 
 def lag_kundefelter(master, data=None):
-    # VIKTIG: Sørg for at etiketter og keys matcher kolonnene i databasen
-    # og det du forventer i sett_inn/oppdater_kunde.
-    # Fjernet Telefon, E-post fra standardfeltene her, basert på varehusdb.sql.
-    etiketter = ["Fornavn", "Etternavn", "Adresse", "Postnummer"]
-    keys = ["fornavn", "etternavn", "adresse", "postnr"]
-    # Hvis du *har* Telefon/Epost, legg dem til i listene over.
-
+    """ Oppretter input-felter for kundeinformasjon. """
+    felt_definisjoner = [
+        ("Fornavn", "fornavn"), ("Etternavn", "etternavn"),
+        ("Adresse", "adresse"), ("Postnummer", "postnr")
+        # ("Telefon", "telefon"), # Uncomment hvis relevant
+        # ("E-post", "epost")     # Uncomment hvis relevant
+    ]
     entries = {}
-    for i, label in enumerate(etiketter):
-        tk.Label(master, text=label + ":").pack(anchor="w", padx=10)
-        entry = tk.Entry(master)
-        entry.pack(fill="x", padx=10, pady=2)
+    for i, (label_tekst, key) in enumerate(felt_definisjoner):
+        frame = tk.Frame(master)
+        frame.pack(fill="x", padx=10, pady=2)
+        tk.Label(frame, text=label_tekst + ":", width=12, anchor="w").pack(side="left")
+        entry = tk.Entry(frame)
+        entry.pack(side="left", fill="x", expand=True)
         if data:
-            # data[0] er KNr, så vi starter indeksering fra data[1]
-            if i + 1 < len(data): # Sjekk at indeksen finnes
-                 entry.insert(0, data[i + 1])
-        entries[keys[i]] = entry
-
-    # Legg til Telefon og Epost manuelt hvis de skal være med,
-    # siden de ikke var i standard etiketter/keys lenger.
-    # Eksempel (hvis de finnes):
-    # tk.Label(master, text="Telefon:").pack(anchor="w", padx=10)
-    # telefon_entry = tk.Entry(master)
-    # telefon_entry.pack(fill="x", padx=10, pady=2)
-    # if data and len(data) > 5: telefon_entry.insert(0, data[5]) # Juster indeks ved behov
-    # entries["telefon"] = telefon_entry
-    #
-    # tk.Label(master, text="E-post:").pack(anchor="w", padx=10)
-    # epost_entry = tk.Entry(master)
-    # epost_entry.pack(fill="x", padx=10, pady=2)
-    # if data and len(data) > 6: epost_entry.insert(0, data[6]) # Juster indeks ved behov
-    # entries["epost"] = epost_entry
-
+            if i + 1 < len(data): entry.insert(0, data[i + 1])
+            else: logging.warning(f"Mangler data på indeks {i+1} for kunde {data[0]} ved redigering.")
+        entries[key] = entry
     return entries

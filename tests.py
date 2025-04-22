@@ -2,8 +2,8 @@
 # Inneholder tester for API, database og GUI
 
 import unittest
-from database import Database
-from api import app
+from database.database import Database
+from app import app
 from flask.testing import FlaskClient
 
 class TestAPI(unittest.TestCase):
