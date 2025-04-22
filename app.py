@@ -43,8 +43,6 @@ def home():
             """
             SELECT 
                 (SELECT COUNT(*) FROM kunde),
-                (SELECT COUNT(*) FROM ordre),
-                (SELECT COUNT(*) FROM vare),
                 (SELECT COUNT(*) FROM ordre WHERE betalt_dato IS NOT NULL),
                 (SELECT COUNT(*) FROM ordre WHERE betalt_dato IS NULL)
             """
