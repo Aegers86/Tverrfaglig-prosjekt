@@ -1,3 +1,5 @@
+#Denne brukes for å oppdatere databasen med en ny tabell for fakturaer og oppdatere kunde-tabellen med en ny kolonne.
+
 from database_program import Database
 from dotenv import load_dotenv
 import mysql.connector

@@ -12,7 +12,7 @@ class PDFGenerator:
         styles = getSampleStyleSheet()
 
         # 🔽 Add a static PNG image at the top (e.g., logo)
-        logo_path = "Z:\Programmering\Tverrfaglig prosjekt\Tverrfaglig-prosjekt\static\logo.png" # Path to your logo
+        logo_path = r"static/logo.png" # Path to your logo
         img = Image(logo_path, width=100, height=50)  # Adjust size as needed
         img.hAlign = 'LEFT'
         elements.append(img)

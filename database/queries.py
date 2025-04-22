@@ -1,3 +1,19 @@
+#Skal denne brukes? sjekk! 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # queries.py
 # Inneholder SQL-spørringer for prosjektet.
 
