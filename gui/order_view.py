@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import tkinter as tk
-from tkinter import ttk, messagebox # Importer messagebox
+from tkinter import ttk, messagebox
 # Sørg for at disse utils-filene finnes og er korrekte
 try:
     from utils.feedback import vis_feil, vis_advarsel
@@ -14,7 +14,7 @@ except ImportError:
     def vis_advarsel(tittel, melding): messagebox.showwarning(tittel, melding)
 
 import logging # Importer logging
-from decimal import Decimal # Importer Decimal for nøyaktig summering
+from decimal import Decimal, InvalidOperation # Importer Decimal for nøyaktig summering
 
 # Prøv å importere PDFGenerator, sett flagg
 try:
@@ -32,6 +32,51 @@ except Exception as e:
     PDF_GENERATOR_AVAILABLE = False
     class PDFGenerator: pass
 
+# --- START PÅ INKLUDERT sorteringsfunksjon ---
+def sort_treeview_column(tree, col, reverse):
+    """ Sorterer en ttk.Treeview-kolonne når headingen klikkes. """
+    try:
+        data_list = []
+        column_ids = tree["columns"]
+        try:
+            col_index = column_ids.index(col)
+        except ValueError:
+            logging.error(f"Sortering feilet: Kolonne-ID '{col}' ikke funnet i {column_ids}")
+            return
+
+        for child_id in tree.get_children(''):
+            try:
+                value = tree.item(child_id, 'values')[col_index]
+                try:
+                    numeric_value = int(value)
+                    data_list.append((numeric_value, child_id))
+                except (ValueError, TypeError):
+                    try:
+                         # Anta at priser/summer kan ha komma, erstatt før Decimal
+                         numeric_value = Decimal(str(value).replace(',', '.'))
+                         data_list.append((numeric_value, child_id))
+                    except (InvalidOperation, ValueError, TypeError):
+                         # Sorter datoer (YYYY-MM-DD) eller annen tekst som strenger
+                         data_list.append((str(value).lower(), child_id))
+            except IndexError:
+                 logging.warning(f"Indeksfeil ved henting av verdi for kolonne '{col}' (indeks {col_index}) for item {child_id}")
+                 data_list.append(("", child_id))
+        try:
+            data_list.sort(key=lambda item: item[0], reverse=reverse)
+        except TypeError as sort_err:
+             logging.error(f"TypeError under sortering av kolonne '{col}': {sort_err}. Sorterer som streng.")
+             data_list = [(str(item[0]).lower(), item[1]) for item in data_list]
+             data_list.sort(key=lambda item: item[0], reverse=reverse)
+
+        for index, (val, child_id) in enumerate(data_list):
+            tree.move(child_id, '', index)
+
+        tree.heading(col, command=lambda _col=col: sort_treeview_column(tree, _col, not reverse))
+
+    except Exception as e:
+        logging.error(f"Uventet feil under sortering av kolonne '{col}': {e}", exc_info=True)
+# --- SLUTT PÅ INKLUDERT sorteringsfunksjon ---
+
 
 # --- Hjelpefunksjon for ordresøk ---
 def _perform_order_search(main_window, search_entry, tree):
@@ -41,38 +86,25 @@ def _perform_order_search(main_window, search_entry, tree):
     main_window.status_label.config(text=status_msg)
     logging.info(status_msg)
 
-    # Tømmer treet før nytt søk/oppdatering
     try:
-        for i in tree.get_children():
-            tree.delete(i)
-    except tk.TclError as e:
-         logging.warning(f"Feil ved tømming av Treeview (ignorerer): {e}")
-
+        for i in tree.get_children(): tree.delete(i)
+    except tk.TclError as e: logging.warning(f"Feil ved tømming av Treeview (ignorerer): {e}")
 
     try:
-        # Basis-spørring med JOIN for å kunne søke på kundenavn
         base_query = """
             SELECT o.OrdreNr, o.OrdreDato, o.SendtDato, o.BetaltDato, o.KNr,
                    CONCAT(k.Fornavn, ' ', k.Etternavn) AS Kundenavn
-            FROM ordre o
-            JOIN kunde k ON o.KNr = k.KNr
-        """
-        where_clause = ""
-        params = []
-
+            FROM ordre o JOIN kunde k ON o.KNr = k.KNr """
+        where_clause = "" ; params = []
         if search_term:
             search_pattern = f"%{search_term}%"
             where_clause = """
-                WHERE CAST(o.OrdreNr AS CHAR) LIKE %s
-                   OR CAST(o.KNr AS CHAR) LIKE %s
-                   OR k.Fornavn LIKE %s
-                   OR k.Etternavn LIKE %s
-                   OR CONCAT(k.Fornavn, ' ', k.Etternavn) LIKE %s
-            """
+                WHERE CAST(o.OrdreNr AS CHAR) LIKE %s OR CAST(o.KNr AS CHAR) LIKE %s
+                   OR k.Fornavn LIKE %s OR k.Etternavn LIKE %s
+                   OR CONCAT(k.Fornavn, ' ', k.Etternavn) LIKE %s """
             params = [search_pattern] * 5
-
+        # Default sortering når man søker/laster inn på nytt
         final_query = base_query + where_clause + " ORDER BY o.OrdreDato DESC;"
-
         data = main_window.db.hent_alle(final_query, tuple(params))
 
         data_length = 0
@@ -85,56 +117,56 @@ def _perform_order_search(main_window, search_entry, tree):
                          except AttributeError: pass
                 tree.insert("", "end", values=tuple(formatted_row))
                 data_length += 1
-
-        if search_term:
-             status_text = f"Søkeresultat for '{search_term}': {data_length} treff. Dobbelklikk for detaljer."
-        else:
-             status_text = f"Alle ordre ({data_length} stk) lastet. Dobbelklikk for detaljer."
-        main_window.status_label.config(text=status_text)
-        logging.info(status_text)
-
+        if search_term: status_text = f"Søkeresultat for '{search_term}': {data_length} treff. Dobbelklikk for detaljer."
+        else: status_text = f"Alle ordre ({data_length} stk) lastet. Dobbelklikk for detaljer."
+        main_window.status_label.config(text=status_text); logging.info(status_text)
     except Exception as e:
         logging.error(f"Feil under ordresøk etter '{search_term}': {e}", exc_info=True)
         vis_feil("Databasefeil", f"Feil under søk etter ordre: {e}")
         main_window.status_label.config(text="Feil under ordresøk")
 
 
-# --- Start på komplett vis_ordrer ---
+# --- Start på komplett vis_ordrer (med sortering) ---
 def vis_ordrer(main_window):
-    """ Viser ordreoversikten med søkefunksjonalitet. """
+    """ Viser ordreoversikten med søkefunksjonalitet og kolonnesortering. """
     main_window.oppdater_navigasjon(["Hoved", "Ordre"])
     main_window.status_label.config(text="Laster inn ordrevisning...")
     main_window.rydd_innhold()
 
     search_frame = tk.Frame(main_window.innhold_frame)
     search_frame.pack(fill="x", padx=10, pady=(5, 0))
-
     tk.Label(search_frame, text="Søk (Ordrenr, Kundenr, Navn):").pack(side="left", padx=(0, 5))
     search_entry = tk.Entry(search_frame)
     search_entry.pack(side="left", fill="x", expand=True, padx=5)
-
     tree = ttk.Treeview(main_window.innhold_frame, show="headings")
-
     search_button = tk.Button(search_frame, text="Søk",
                               command=lambda: _perform_order_search(main_window, search_entry, tree))
     search_button.pack(side="left", padx=(5, 0))
     search_entry.bind("<Return>", lambda event: _perform_order_search(main_window, search_entry, tree))
 
+    # Definer kolonne-IDer som sorteringsfunksjonen forventer
     tree_columns = ("OrdreNr", "OrdreDato", "SendtDato", "BetaltDato", "KNr", "Kundenavn")
     tree["columns"] = tree_columns
 
-    tree.heading("OrdreNr", text="Ordrenr"); tree.column("OrdreNr", width=80, anchor="center")
-    tree.heading("OrdreDato", text="Ordredato"); tree.column("OrdreDato", width=100, anchor="center")
-    tree.heading("SendtDato", text="Sendt dato"); tree.column("SendtDato", width=100, anchor="center")
-    tree.heading("BetaltDato", text="Betalt dato"); tree.column("BetaltDato", width=100, anchor="center")
-    tree.heading("KNr", text="Kundenr"); tree.column("KNr", width=80, anchor="center")
-    tree.heading("Kundenavn", text="Kundenavn"); tree.column("Kundenavn", width=150, anchor="w")
+    # Legg til command for sortering på hver heading
+    tree.heading("OrdreNr", text="Ordrenr", command=lambda c="OrdreNr": sort_treeview_column(tree, c, False))
+    tree.column("OrdreNr", width=80, anchor="center")
+    tree.heading("OrdreDato", text="Ordredato", command=lambda c="OrdreDato": sort_treeview_column(tree, c, False))
+    tree.column("OrdreDato", width=100, anchor="center")
+    tree.heading("SendtDato", text="Sendt dato", command=lambda c="SendtDato": sort_treeview_column(tree, c, False))
+    tree.column("SendtDato", width=100, anchor="center")
+    tree.heading("BetaltDato", text="Betalt dato", command=lambda c="BetaltDato": sort_treeview_column(tree, c, False))
+    tree.column("BetaltDato", width=100, anchor="center")
+    tree.heading("KNr", text="Kundenr", command=lambda c="KNr": sort_treeview_column(tree, c, False))
+    tree.column("KNr", width=80, anchor="center")
+    tree.heading("Kundenavn", text="Kundenavn", command=lambda c="Kundenavn": sort_treeview_column(tree, c, False))
+    tree.column("Kundenavn", width=150, anchor="w")
 
     tree.pack(fill="both", expand=True, padx=10, pady=10)
     tree.bind("<Double-1>", lambda event: vis_ordredetaljer(main_window, tree))
 
-    # Initialiser visningen ved å vise alle ordre
-    _perform_order_search(main_window, search_entry, tree)
+    # Bunn-knapp er fjernet
+    _perform_order_search(main_window, search_entry, tree) # Last inn alle initielt
 
 # --- Slutt på komplett vis_ordrer ---
 
@@ -175,6 +207,7 @@ def vis_ordredetaljer(main_window, tree):
         main_window.status_label.config(text=f"Feil ved lasting av detaljer for ordre {ordre_nr}")
         return
 
+    # Treeview for ordrelinjer (INGEN sortering lagt til her - kan legges til om ønskelig)
     tree_detaljer = ttk.Treeview(main_window.innhold_frame, show="headings")
     tree_detaljer_columns = ("VNr", "Enhetspris", "Antall", "Sum")
     tree_detaljer["columns"] = tree_detaljer_columns
@@ -202,15 +235,13 @@ def vis_ordredetaljer(main_window, tree):
 
     # --- Funksjon for fakturaknapp ---
     def _generer_faktura_pdf():
-        # Sjekker flagget først - dette er den viktigste logiske sperren
         if not PDF_GENERATOR_AVAILABLE:
-             vis_feil("Feil", "PDFGenerator-modulen er ikke tilgjengelig. Kan ikke generere faktura.")
+             vis_feil("Feil", "PDFGenerator-modulen er ikke tilgjengelig.")
              main_window.status_label.config(text="Feil: PDFGenerator mangler")
              return
 
         main_window.status_label.config(text=f"Genererer faktura for ordre {ordre_nr}...")
         try:
-            # Hent nødvendig data for fakturaen
             ordre_query = "SELECT OrdreNr, OrdreDato, SendtDato, BetaltDato, KNr FROM ordre WHERE OrdreNr = %s"
             ordre = main_window.db.hent_en(ordre_query, (ordre_nr,))
             if not ordre: raise ValueError(f"Fant ikke ordredata for ordre {ordre_nr}")
@@ -229,13 +260,7 @@ def vis_ordredetaljer(main_window, tree):
 
             faktura_nummer = f"FA-{ordre_nr}"
 
-            # --- ENDRING HER: Opprett objektet rett før bruk ---
-            # Dette objektet opprettes KUN hvis PDF_GENERATOR_AVAILABLE er True
-            # OG all data er hentet uten feil.
             pdf_gen = PDFGenerator()
-            # --- Slutt på endring ---
-
-            # Generer PDF
             pdf_gen.generate_invoice(ordre, ordrelinjer_pdf, kunde, faktura_nummer)
 
             messagebox.showinfo("Suksess", f"Faktura 'faktura_{ordre_nr}.pdf' er generert!")
@@ -244,19 +269,17 @@ def vis_ordredetaljer(main_window, tree):
         except FileNotFoundError as fnf_error:
              logging.error(f"Filafeil ved generering av faktura for ordre {ordre_nr}: {fnf_error}", exc_info=True)
              if 'static/logo.png' in str(fnf_error):
-                 vis_feil("Feil", f"Kunne ikke generere faktura: Finner ikke logo-filen 'static/logo.png'.")
+                 vis_feil("Feil", f"Finner ikke logo-filen 'static/logo.png'.")
              else:
-                 vis_feil("Feil", f"Kunne ikke generere faktura: Finner ikke fil ({fnf_error}).")
+                 vis_feil("Feil", f"Finner ikke fil ({fnf_error}).")
              main_window.status_label.config(text=f"Feil ved generering av faktura")
         except ValueError as val_err:
              logging.error(f"Datafeil ved generering av faktura for ordre {ordre_nr}: {val_err}", exc_info=True)
              vis_feil("Feil", f"Kunne ikke generere faktura: {val_err}")
              main_window.status_label.config(text=f"Feil: Manglende data for faktura")
-        # Vi fanger ikke ImportError her lenger, siden sjekken skjer vha. flagget
         except Exception as e:
             logging.error(f"Generell feil ved generering av faktura for ordre {ordre_nr}: {e}", exc_info=True)
-            # Prøv å gi en litt mer spesifikk feilmelding hvis mulig
-            error_msg = f"Kunne ikke generere faktura: En uventet feil oppstod ({type(e).__name__}: {e})"
+            error_msg = f"Kunne ikke generere faktura ({type(e).__name__}: {e})"
             vis_feil("Feil", error_msg)
             main_window.status_label.config(text=f"Feil ved generering av faktura")
 
