@@ -35,3 +35,13 @@ LOGGING_CONFIG = {
     "LOG_FILE": "app.log",
     "LOG_LEVEL": os.getenv("LOG_LEVEL", "INFO"),
 }
+
+# Firma-informasjon for fakturaer
+FIRMA_INFO = {
+    "NAVN": "Gruppe 1",
+    "ADRESSE": "Gruppeveien 1",
+    "POSTNUMMER": "1111",
+    "STED": "Oslo",
+    "ORGNR": "111 111 111"
+}
+

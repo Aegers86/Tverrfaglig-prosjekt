@@ -1,20 +1,4 @@
-#Skal denne brukes? sjekk! 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# queries.py
+# database/queries.py
 # Inneholder SQL-spørringer for prosjektet.
 
 # Nøkkeltall-statistikk for hovedsiden

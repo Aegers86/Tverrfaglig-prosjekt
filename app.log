@@ -1,1 +1,220 @@
 2025-03-14 19:54:39,436 - INFO - \u2705 Tilkoblet databasen.
+2025-04-24 07:58:40 - INFO - [logs.py:31] - --- Logging startet ---
+2025-04-26 21:58:49 - INFO - [logs.py:31] - --- Logging startet ---
+2025-04-26 21:58:49 - INFO - [logs.py:35] - ✅ Ny databasetilkobling etablert (autocommit=False).
+2025-04-26 21:58:49 - INFO - [database_handler.py:17] - DatabaseHandler initialisert og tilkobling opprettet.
+2025-04-26 21:58:49 - INFO - [hoved_vindu.py:166] - Starter Tkinter mainloop.
+2025-04-26 21:58:53 - INFO - [database.py:190] - Databasetransaksjon committet.
+2025-04-26 21:58:53 - INFO - [logs.py:35] - Kalt prosedyre 'hent_alle_kunder', 512 resultater returnert/committet.
+2025-04-26 21:59:02 - INFO - [database.py:190] - Databasetransaksjon committet.
+2025-04-26 21:59:02 - INFO - [logs.py:35] - Kalt prosedyre 'hent_alle_kunder', 512 resultater returnert/committet.
+2025-04-26 21:59:04 - INFO - [database.py:190] - Databasetransaksjon committet.
+2025-04-26 21:59:04 - INFO - [logs.py:35] - Kalt prosedyre 'hent_alle_kunder', 512 resultater returnert/committet.
+2025-04-26 21:59:13 - INFO - [vare_vindu.py:118] - Varelager lastet (161 varer).
+2025-04-26 22:01:21 - INFO - [logs.py:31] - --- Logging startet ---
+2025-04-26 22:01:21 - INFO - [logs.py:35] - ✅ Ny databasetilkobling etablert (autocommit=False).
+2025-04-26 22:01:21 - INFO - [database_handler.py:17] - DatabaseHandler initialisert og tilkobling opprettet.
+2025-04-26 22:01:21 - INFO - [hoved_vindu.py:166] - Starter Tkinter mainloop.
+2025-04-26 22:01:25 - INFO - [database.py:190] - Databasetransaksjon committet.
+2025-04-26 22:01:25 - INFO - [logs.py:35] - Kalt prosedyre 'hent_alle_kunder', 512 resultater returnert/committet.
+2025-04-26 22:01:25 - INFO - [vare_vindu.py:118] - Varelager lastet (161 varer).
+2025-04-26 22:01:27 - INFO - [database.py:190] - Databasetransaksjon committet.
+2025-04-26 22:01:27 - INFO - [logs.py:35] - Kalt prosedyre 'hent_alle_kunder', 512 resultater returnert/committet.
+2025-04-26 22:01:42 - INFO - [vare_vindu.py:118] - Varelager lastet (161 varer).
+2025-04-26 22:01:43 - INFO - [database.py:190] - Databasetransaksjon committet.
+2025-04-26 22:01:43 - INFO - [logs.py:35] - Kalt prosedyre 'hent_alle_kunder', 512 resultater returnert/committet.
+2025-04-26 22:16:42 - INFO - [logs.py:31] - --- Logging startet ---
+2025-04-26 22:16:42 - INFO - [logs.py:35] - ✅ Ny databasetilkobling etablert (autocommit=False).
+2025-04-26 22:16:42 - INFO - [database_handler.py:17] - DatabaseHandler initialisert og tilkobling opprettet.
+2025-04-26 22:16:42 - INFO - [hoved_vindu.py:166] - Starter Tkinter mainloop.
+2025-04-26 22:19:19 - INFO - [logs.py:31] - --- Logging startet ---
+2025-04-26 22:19:19 - INFO - [logs.py:35] - ✅ Ny databasetilkobling etablert (autocommit=False).
+2025-04-26 22:19:19 - INFO - [database_handler.py:17] - DatabaseHandler initialisert og tilkobling opprettet.
+2025-04-26 22:19:19 - INFO - [hoved_vindu.py:166] - Starter Tkinter mainloop.
+2025-04-26 22:19:30 - ERROR - [vis_ordredetaljer_vindu.py:108] - Feil ved generering av faktura: 4
+Traceback (most recent call last):
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\gui\vis_ordredetaljer_vindu.py", line 93, in generer_faktura
+    kunde_nr = ordre[4]
+               ~~~~~^^^
+KeyError: 4
+2025-04-26 22:19:41 - ERROR - [vis_ordredetaljer_vindu.py:108] - Feil ved generering av faktura: 4
+Traceback (most recent call last):
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\gui\vis_ordredetaljer_vindu.py", line 93, in generer_faktura
+    kunde_nr = ordre[4]
+               ~~~~~^^^
+KeyError: 4
+2025-04-26 22:19:44 - ERROR - [vis_ordredetaljer_vindu.py:108] - Feil ved generering av faktura: 4
+Traceback (most recent call last):
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\gui\vis_ordredetaljer_vindu.py", line 93, in generer_faktura
+    kunde_nr = ordre[4]
+               ~~~~~^^^
+KeyError: 4
+2025-04-26 22:23:56 - INFO - [logs.py:31] - --- Logging startet ---
+2025-04-26 22:23:57 - INFO - [logs.py:35] - ✅ Ny databasetilkobling etablert (autocommit=False).
+2025-04-26 22:23:57 - INFO - [database_handler.py:17] - DatabaseHandler initialisert og tilkobling opprettet.
+2025-04-26 22:23:57 - INFO - [hoved_vindu.py:166] - Starter Tkinter mainloop.
+2025-04-26 22:24:00 - INFO - [vare_vindu.py:118] - Varelager lastet (161 varer).
+2025-04-26 22:24:01 - INFO - [database.py:190] - Databasetransaksjon committet.
+2025-04-26 22:24:01 - INFO - [logs.py:35] - Kalt prosedyre 'hent_alle_kunder', 512 resultater returnert/committet.
+2025-04-26 22:24:16 - ERROR - [vis_ordredetaljer_vindu.py:108] - Feil ved generering av faktura: 0
+Traceback (most recent call last):
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\gui\vis_ordredetaljer_vindu.py", line 104, in generer_faktura
+    pdf_gen.generate_invoice(ordre, ordrelinjer_pdf, kunde, faktura_nummer)
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\pdf_generator.py", line 9, in generate_invoice
+    pdf_filename = f"faktura_{ordre[0]}.pdf"
+                              ~~~~~^^^
+KeyError: 0
+2025-04-26 22:24:40 - ERROR - [vis_ordredetaljer_vindu.py:108] - Feil ved generering av faktura: 0
+Traceback (most recent call last):
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\gui\vis_ordredetaljer_vindu.py", line 104, in generer_faktura
+    pdf_gen.generate_invoice(ordre, ordrelinjer_pdf, kunde, faktura_nummer)
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\pdf_generator.py", line 9, in generate_invoice
+    pdf_filename = f"faktura_{ordre[0]}.pdf"
+                              ~~~~~^^^
+KeyError: 0
+2025-04-26 22:25:57 - INFO - [logs.py:31] - --- Logging startet ---
+2025-04-26 22:25:57 - INFO - [logs.py:35] - ✅ Ny databasetilkobling etablert (autocommit=False).
+2025-04-26 22:25:57 - INFO - [database_handler.py:17] - DatabaseHandler initialisert og tilkobling opprettet.
+2025-04-26 22:25:57 - INFO - [hoved_vindu.py:166] - Starter Tkinter mainloop.
+2025-04-26 22:26:01 - ERROR - [vis_ordredetaljer_vindu.py:124] - Feil ved generering av faktura: 0
+Traceback (most recent call last):
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\gui\vis_ordredetaljer_vindu.py", line 119, in generer_faktura
+    pdf_gen.generate_invoice(ordre, ordrelinjer_pdf, kunde, faktura_nummer)
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\pdf_generator.py", line 9, in generate_invoice
+    pdf_filename = f"faktura_{ordre[0]}.pdf"
+                              ~~~~~^^^
+KeyError: 0
+2025-04-26 22:26:04 - ERROR - [vis_ordredetaljer_vindu.py:124] - Feil ved generering av faktura: 0
+Traceback (most recent call last):
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\gui\vis_ordredetaljer_vindu.py", line 119, in generer_faktura
+    pdf_gen.generate_invoice(ordre, ordrelinjer_pdf, kunde, faktura_nummer)
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\pdf_generator.py", line 9, in generate_invoice
+    pdf_filename = f"faktura_{ordre[0]}.pdf"
+                              ~~~~~^^^
+KeyError: 0
+2025-04-26 22:26:09 - ERROR - [vis_ordredetaljer_vindu.py:124] - Feil ved generering av faktura: 0
+Traceback (most recent call last):
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\gui\vis_ordredetaljer_vindu.py", line 119, in generer_faktura
+    pdf_gen.generate_invoice(ordre, ordrelinjer_pdf, kunde, faktura_nummer)
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\pdf_generator.py", line 9, in generate_invoice
+    pdf_filename = f"faktura_{ordre[0]}.pdf"
+                              ~~~~~^^^
+KeyError: 0
+2025-04-26 22:30:14 - INFO - [logs.py:31] - --- Logging startet ---
+2025-04-26 22:30:14 - INFO - [logs.py:35] - ✅ Ny databasetilkobling etablert (autocommit=False).
+2025-04-26 22:30:14 - INFO - [database_handler.py:17] - DatabaseHandler initialisert og tilkobling opprettet.
+2025-04-26 22:30:14 - INFO - [hoved_vindu.py:166] - Starter Tkinter mainloop.
+2025-04-26 22:30:16 - INFO - [database.py:190] - Databasetransaksjon committet.
+2025-04-26 22:30:16 - INFO - [logs.py:35] - Kalt prosedyre 'hent_alle_kunder', 512 resultater returnert/committet.
+2025-04-26 22:30:18 - INFO - [vare_vindu.py:118] - Varelager lastet (161 varer).
+2025-04-26 22:32:32 - INFO - [logs.py:31] - --- Logging startet ---
+2025-04-26 22:32:32 - INFO - [logs.py:35] - ✅ Ny databasetilkobling etablert (autocommit=False).
+2025-04-26 22:32:32 - INFO - [database_handler.py:17] - DatabaseHandler initialisert og tilkobling opprettet.
+2025-04-26 22:32:32 - INFO - [hoved_vindu.py:166] - Starter Tkinter mainloop.
+2025-04-26 22:33:51 - INFO - [logs.py:31] - --- Logging startet ---
+2025-04-26 22:33:51 - INFO - [logs.py:35] - ✅ Ny databasetilkobling etablert (autocommit=False).
+2025-04-26 22:33:51 - INFO - [database_handler.py:17] - DatabaseHandler initialisert og tilkobling opprettet.
+2025-04-26 22:33:51 - INFO - [hoved_vindu.py:166] - Starter Tkinter mainloop.
+2025-04-26 22:33:56 - ERROR - [vis_ordredetaljer_vindu.py:127] - Feil ved generering av faktura: 0
+Traceback (most recent call last):
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\gui\vis_ordredetaljer_vindu.py", line 122, in generer_faktura
+    pdf_gen.generate_invoice(ordre, ordrelinjer_pdf, kunde, faktura_nummer)
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\pdf_generator.py", line 9, in generate_invoice
+    pdf_filename = f"faktura_{ordre[0]}.pdf"
+                              ~~~~~^^^
+KeyError: 0
+2025-04-26 22:33:59 - ERROR - [vis_ordredetaljer_vindu.py:127] - Feil ved generering av faktura: 0
+Traceback (most recent call last):
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\gui\vis_ordredetaljer_vindu.py", line 122, in generer_faktura
+    pdf_gen.generate_invoice(ordre, ordrelinjer_pdf, kunde, faktura_nummer)
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\pdf_generator.py", line 9, in generate_invoice
+    pdf_filename = f"faktura_{ordre[0]}.pdf"
+                              ~~~~~^^^
+KeyError: 0
+2025-04-26 22:36:56 - INFO - [logs.py:31] - --- Logging startet ---
+2025-04-26 22:36:56 - INFO - [logs.py:35] - ✅ Ny databasetilkobling etablert (autocommit=False).
+2025-04-26 22:36:56 - INFO - [database_handler.py:17] - DatabaseHandler initialisert og tilkobling opprettet.
+2025-04-26 22:36:56 - INFO - [hoved_vindu.py:166] - Starter Tkinter mainloop.
+2025-04-26 22:37:00 - ERROR - [vis_ordredetaljer_vindu.py:127] - Feil ved generering av faktura: 0
+Traceback (most recent call last):
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\gui\vis_ordredetaljer_vindu.py", line 122, in generer_faktura
+    pdf_gen.generate_invoice(ordre, ordrelinjer_pdf, kunde, faktura_nummer)
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\pdf_generator.py", line 9, in generate_invoice
+    pdf_filename = f"faktura_{ordre[0]}.pdf"
+                              ~~~~~^^^
+KeyError: 0
+2025-04-26 22:37:04 - ERROR - [vis_ordredetaljer_vindu.py:127] - Feil ved generering av faktura: 0
+Traceback (most recent call last):
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\gui\vis_ordredetaljer_vindu.py", line 122, in generer_faktura
+    pdf_gen.generate_invoice(ordre, ordrelinjer_pdf, kunde, faktura_nummer)
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\pdf_generator.py", line 9, in generate_invoice
+    pdf_filename = f"faktura_{ordre[0]}.pdf"
+                              ~~~~~^^^
+KeyError: 0
+2025-04-26 22:45:18 - INFO - [hoved_vindu.py:161] - Applikasjon avsluttet av bruker.
+2025-04-26 22:45:18 - INFO - [logs.py:31] - --- Logging startet ---
+2025-04-26 22:45:18 - INFO - [logs.py:35] - ✅ Ny databasetilkobling etablert (autocommit=False).
+2025-04-26 22:45:18 - INFO - [database_handler.py:17] - DatabaseHandler initialisert og tilkobling opprettet.
+2025-04-26 22:45:18 - INFO - [hoved_vindu.py:166] - Starter Tkinter mainloop.
+2025-04-26 22:45:24 - ERROR - [vis_ordredetaljer_vindu.py:128] - Feil ved fakturagenerering: 'DatabaseHandler' object has no attribute 'insert_faktura'
+Traceback (most recent call last):
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\gui\vis_ordredetaljer_vindu.py", line 107, in generer_faktura
+    faktura_id = main_window.db.insert_faktura(ordre_nr, kunde_nr)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'DatabaseHandler' object has no attribute 'insert_faktura'
+2025-04-26 22:49:36 - INFO - [logs.py:31] - --- Logging startet ---
+2025-04-26 22:49:36 - INFO - [logs.py:35] - ✅ Ny databasetilkobling etablert (autocommit=False).
+2025-04-26 22:49:36 - INFO - [database_handler.py:16] - DatabaseHandler initialisert og tilkobling opprettet.
+2025-04-26 22:49:36 - INFO - [hoved_vindu.py:166] - Starter Tkinter mainloop.
+2025-04-26 22:49:42 - ERROR - [logs.py:43] - ⚠ Feil ved start av transaksjon: Transaction already in progress
+Traceback (most recent call last):
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\database\database.py", line 179, in start_transaction
+    self.connection.start_transaction()
+  File "C:\Program Files\Python311\Lib\site-packages\mysql\connector\abstracts.py", line 1788, in start_transaction
+    raise ProgrammingError("Transaction already in progress")
+mysql.connector.errors.ProgrammingError: Transaction already in progress
+2025-04-26 22:49:42 - ERROR - [database_handler.py:153] - Feil ved insert_faktura: Kunne ikke starte databasetransaksjon
+Traceback (most recent call last):
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\database\database.py", line 179, in start_transaction
+    self.connection.start_transaction()
+  File "C:\Program Files\Python311\Lib\site-packages\mysql\connector\abstracts.py", line 1788, in start_transaction
+    raise ProgrammingError("Transaction already in progress")
+mysql.connector.errors.ProgrammingError: Transaction already in progress
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\handlers\database_handler.py", line 141, in insert_faktura
+    self.db.start_transaction()  # Viktig å starte transaksjon
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\database\database.py", line 183, in start_transaction
+    raise RuntimeError("Kunne ikke starte databasetransaksjon") from err
+RuntimeError: Kunne ikke starte databasetransaksjon
+2025-04-26 22:49:42 - INFO - [database.py:204] - Databasetransaksjon rullet tilbake.
+2025-04-26 22:49:42 - ERROR - [vis_ordredetaljer_vindu.py:128] - Feil ved fakturagenerering: Feil ved lagring av faktura: Kunne ikke starte databasetransaksjon
+Traceback (most recent call last):
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\database\database.py", line 179, in start_transaction
+    self.connection.start_transaction()
+  File "C:\Program Files\Python311\Lib\site-packages\mysql\connector\abstracts.py", line 1788, in start_transaction
+    raise ProgrammingError("Transaction already in progress")
+mysql.connector.errors.ProgrammingError: Transaction already in progress
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\handlers\database_handler.py", line 141, in insert_faktura
+    self.db.start_transaction()  # Viktig å starte transaksjon
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\database\database.py", line 183, in start_transaction
+    raise RuntimeError("Kunne ikke starte databasetransaksjon") from err
+RuntimeError: Kunne ikke starte databasetransaksjon
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\gui\vis_ordredetaljer_vindu.py", line 107, in generer_faktura
+    faktura_id = main_window.db.insert_faktura(ordre_nr, kunde_nr)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\merkn\OneDrive\Koding\GruppeArbeid\Tverrfaglig-prosjekt\handlers\database_handler.py", line 158, in insert_faktura
+    raise RuntimeError(f"Feil ved lagring av faktura: {e}")
+RuntimeError: Feil ved lagring av faktura: Kunne ikke starte databasetransaksjon

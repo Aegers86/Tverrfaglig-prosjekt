@@ -1,4 +1,5 @@
 # gui/vare_vindu.py
+
 from tkinter import ttk, messagebox
 # Sørg for at disse utils-filene finnes og er korrekte
 try:
@@ -23,9 +24,10 @@ def sort_treeview_column(tree, col, reverse):
             col_index = column_ids.index(col)
         except ValueError:
             logging.error(f"Sortering feilet: Kolonne-ID '{col}' ikke funnet i {column_ids}")
-            return
+            return # Kan ikke sortere ukjent kolonne
 
         for child_id in tree.get_children(''):
+            # Hent verdien fra riktig indeks
             try:
                 value = tree.item(child_id, 'values')[col_index]
                 # Prøv å konvertere til numerisk type hvis mulig for bedre sortering
@@ -74,8 +76,7 @@ def vis_varer(main_window):
     main_window.rydd_innhold()
 
     try:
-        # Hent data fra vare-tabellen, bruk korrekte kolonnenavn
-        query = "SELECT VNr, Betegnelse, Antall, Pris FROM vare ORDER BY Betegnelse ASC;" # Default sort
+        query = "SELECT VNr, Betegnelse, Antall, Pris FROM vare ORDER BY Betegnelse ASC;"
         data = main_window.db.hent_alle(query)
     except Exception as e:
         logging.error(f"Feil ved henting av varelager: {e}", exc_info=True)
@@ -83,13 +84,10 @@ def vis_varer(main_window):
         main_window.status_label.config(text="Feil ved lasting av varelager")
         return
 
-    # Sett opp Treeview for varelageret
     tree = ttk.Treeview(main_window.innhold_frame, show="headings")
-    # Definer kolonne-IDer som skal brukes i heading command
     tree_columns = ("VNr", "Betegnelse", "Antall", "Pris")
     tree["columns"] = tree_columns
 
-    # Definerer kolonneoverskrifter, bredder OG command for sortering
     tree.heading("VNr", text="Varenr", command=lambda c="VNr": sort_treeview_column(tree, c, False))
     tree.column("VNr", width=100, anchor="w")
     tree.heading("Betegnelse", text="Navn", command=lambda c="Betegnelse": sort_treeview_column(tree, c, False))
@@ -97,31 +95,24 @@ def vis_varer(main_window):
     tree.heading("Antall", text="Antall på lager", command=lambda c="Antall": sort_treeview_column(tree, c, False))
     tree.column("Antall", width=100, anchor="center")
     tree.heading("Pris", text="Pris (NOK)", command=lambda c="Pris": sort_treeview_column(tree, c, False))
-    tree.column("Pris", width=100, anchor="e") # 'e' for høyrejustert
+    tree.column("Pris", width=100, anchor="e")
 
-    # Fyller Treeview med data
     data_length = 0
     if data:
         for row in data:
-            # Formater pris FØR innsetting, slik at sorteringsfunksjonen
-            # mottar den formaterte strengen (f.eks. "123.45")
             try:
-                pris_decimal = Decimal(row[3]) if row[3] is not None else Decimal('0.00')
+                pris_decimal = Decimal(row["Pris"]) if row["Pris"] is not None else Decimal('0.00')
                 pris_str = f"{pris_decimal:.2f}"
-            except (InvalidOperation, TypeError) as price_err:
-                logging.warning(f"Kunne ikke formatere pris for vare {row[0]}: {row[3]} ({price_err})")
+            except (InvalidOperation, TypeError, KeyError) as price_err:
+                logging.warning(f"Kunne ikke formatere pris for vare {row.get('VNr', '?')}: {row.get('Pris')} ({price_err})")
                 pris_str = "Ugyldig"
 
-            # Bruk den formaterte pris-strengen ved innsetting
-            formatted_row = (row[0], row[1], row[2], pris_str)
+            formatted_row = (row.get("VNr"), row.get("Betegnelse"), row.get("Antall"), pris_str)
             tree.insert("", "end", values=formatted_row)
             data_length += 1
 
     tree.pack(fill="both", expand=True, padx=10, pady=10)
 
-    # Ingen ekstra knapper under varelagerlisten
-
-    # Oppdaterer statuslabel
     status_text = f"Varelager lastet ({data_length} varer)." if data else "Varelageret er tomt."
     main_window.status_label.config(text=status_text)
     logging.info(status_text)
