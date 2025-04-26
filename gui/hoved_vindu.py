@@ -1,19 +1,26 @@
 # gui/hoved_vindu.py
+
+import os
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import tkinter as tk
 from tkinter import font, messagebox
 import logging
 from decimal import Decimal
 from datetime import datetime
 
+# Importer de riktige modulene
 try:
     from gui.order_view import vis_ordrer
     from gui.kunde_vindu import vis_kunder
     from gui.vare_vindu import vis_varer
+    from gui.meny import lag_menylinje
 except ImportError as e:
     logging.error(f"Kunne ikke importere GUI-moduler: {e}", exc_info=True)
     def vis_ordrer(main_window): messagebox.showerror("Feil", "Ordre-modul ikke lastet.")
     def vis_kunder(main_window): messagebox.showerror("Feil", "Kunde-modul ikke lastet.")
     def vis_varer(main_window): messagebox.showerror("Feil", "Vare-modul ikke lastet.")
+    def lag_menylinje(root, main_window): pass
 
 try:
     from handlers.database_handler import DatabaseHandler
@@ -47,7 +54,7 @@ class MainWindow:
         self.link_font = font.Font(family="Arial", size=10, underline=True)
         self._lag_layout()
         self._lag_navigasjonsknapper()
-        self.lag_meny()
+        lag_menylinje(self.root, self)
 
         try:
             self.vis_startside()
@@ -94,26 +101,9 @@ class MainWindow:
 
     def _lag_navigasjonsknapper(self):
         tk.Label(self.nav_frame, text="Navigasjon", font=("Arial", 12, "bold"), bg="#ECECEC").pack(pady=(10,5))
-        tk.Frame(self.nav_frame, height=1, bg="grey").pack(fill=tk.X, padx=5, pady=(0, 10))
+        tk.Frame(self.nav_frame, height=1, bg="grey").pack(fill=tk.X, padx=5, pady=(0,10))
         for tekst, kommando in self.navigasjon_map.items():
             self._lag_navigasjonsknapp(tekst, kommando)
-
-    def lag_meny(self):
-        menylinje = tk.Menu(self.root)
-        self.root.config(menu=menylinje)
-        filmeny = tk.Menu(menylinje, tearoff=0)
-        filmeny.add_command(label="Startside", command=self.vis_startside)
-        filmeny.add_separator()
-        filmeny.add_command(label="Avslutt", command=self.avslutt)
-        menylinje.add_cascade(label="Fil", menu=filmeny)
-        vis_meny = tk.Menu(menylinje, tearoff=0)
-        vis_meny.add_command(label="Kunder", command=lambda: vis_kunder(self))
-        vis_meny.add_command(label="Ordrer", command=lambda: vis_ordrer(self))
-        vis_meny.add_command(label="Varelager", command=lambda: vis_varer(self))
-        menylinje.add_cascade(label="Vis", menu=vis_meny)
-        hjelpmeny = tk.Menu(menylinje, tearoff=0)
-        hjelpmeny.add_command(label="Om", command=self.vis_om)
-        menylinje.add_cascade(label="Hjelp", menu=hjelpmeny)
 
     def vis_startside(self):
         self.oppdater_navigasjon(["Hoved"])
@@ -121,20 +111,79 @@ class MainWindow:
         self.status_label.config(text="Henter oversikt...")
 
         try:
+            oversikt_frame = tk.Frame(self.innhold_frame)
+            oversikt_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
             antall_kunder = self.db.hent_en("SELECT COUNT(*) FROM kunde;").get("COUNT(*)", 0)
             antall_ordrer = self.db.hent_en("SELECT COUNT(*) FROM ordre;").get("COUNT(*)", 0)
             total_sum_result = self.db.hent_en("SELECT SUM(PrisPrEnhet * Antall) FROM ordrelinje;")
-            total_sum = Decimal(total_sum_result.get("SUM(PrisPrEnhet * Antall)", 0)) if total_sum_result else Decimal(
-                "0.00")
+            total_sum = Decimal(total_sum_result.get("SUM(PrisPrEnhet * Antall)", 0)) if total_sum_result else Decimal("0.00")
             verdi_ubetalte = self.db.hent_verdi_ubetalte_ordrer()
+
             nå = datetime.now()
             antall_ordrer_i_år = self.db.hent_antall_ordrer_per_aar(nå.year)
             antall_ordrer_fjorår = self.db.hent_antall_ordrer_per_aar(nå.year - 1)
+
+            labels = [
+                f"Antall kunder: {antall_kunder}",
+                f"Antall ordrer: {antall_ordrer}",
+                f"Total omsetning: {formater_tall_norsk(total_sum)} kr",
+                f"Verdi ubetalte fakturaer: {formater_tall_norsk(verdi_ubetalte)} kr",
+                f"Ordrer i år: {antall_ordrer_i_år}",
+                f"Ordrer i fjor: {antall_ordrer_fjorår}"
+            ]
+
+            for tekst in labels:
+                lbl = tk.Label(oversikt_frame, text=tekst, font=("Arial", 12), anchor="w")
+                lbl.pack(fill="x", pady=2)
+
+            # --- Tegn salgsgraf ---
+            self.vis_salgsgraf(oversikt_frame)
+
             self.status_label.config(text="Oversikt lastet")
+
         except Exception as e:
             logging.error(f"Feil ved henting av data for startside: {e}", exc_info=True)
             messagebox.showerror("Feil", f"Kunne ikke hente data for startsiden: {e}")
             self.status_label.config(text="Feil ved lasting av oversikt")
+
+    def vis_salgsgraf(self, parent_frame):
+        """ Viser graf over salg siste 5 år, og lagrer bildet i static/ """
+        try:
+            nå = datetime.now()
+            start_år = nå.year - 6
+            årstall = list(range(start_år, nå.year + 1))
+            salgstall = []
+
+            for år in årstall:
+                result = self.db.hent_en(
+                    "SELECT SUM(PrisPrEnhet * Antall) as total FROM ordrelinje JOIN ordre ON ordrelinje.OrdreNr = ordre.OrdreNr WHERE YEAR(ordre.OrdreDato) = %s;",
+                    (år,)
+                )
+                total = result.get('total', 0) if result else 0
+                salgstall.append(float(total or 0))
+
+            fig = Figure(figsize=(6, 3.5), dpi=100)
+            ax = fig.add_subplot(111)
+            ax.plot(årstall, salgstall, marker='o', linestyle='-', color='blue')
+            ax.set_title("Salg siste 5 år")
+            ax.set_xlabel("År")
+            ax.set_ylabel("Omsetning (kr)")
+            ax.grid(True)
+
+            # Vis grafen i GUI
+            canvas = FigureCanvasTkAgg(fig, master=parent_frame)
+            canvas.draw()
+            canvas.get_tk_widget().pack(fill="both", expand=True, pady=10)
+
+            # Lagre som PNG
+            os.makedirs("static", exist_ok=True)
+            fig.savefig(os.path.join("static", "salg_siste_5_år.png"))
+            logging.info("Salgsgraf lagret til static/salg_siste_5_år.png")
+
+        except Exception as e:
+            logging.error(f"Feil under generering av salgsgraf: {e}", exc_info=True)
+            tk.Label(parent_frame, text="Kunne ikke laste salgsgraf", fg="red").pack(pady=10)
 
     def oppdater_navigasjon(self, sti_liste):
         try:
@@ -151,10 +200,6 @@ class MainWindow:
     def rydd_innhold(self):
         for widget in self.innhold_frame.winfo_children():
             widget.destroy()
-
-    @staticmethod
-    def vis_om():
-        messagebox.showinfo("Om", "Tverrfaglig prosjekt - Varehus App\n\nLaget av Gruppe X")
 
     def avslutt(self):
         if messagebox.askyesno("Avslutt", "Er du sikker på at du vil avslutte?"):
