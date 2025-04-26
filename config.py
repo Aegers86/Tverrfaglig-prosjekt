@@ -38,10 +38,11 @@ LOGGING_CONFIG = {
 
 # Firma-informasjon for fakturaer
 FIRMA_INFO = {
-    "NAVN": "Gruppe 1",
-    "ADRESSE": "Gruppeveien 1",
-    "POSTNUMMER": "1111",
-    "STED": "Oslo",
-    "ORGNR": "111 111 111"
+    "navn": "Gruppe 1",
+    "adresse": "Gruppeveien 1",
+    "postnummer": "1111",
+    "sted": "Oslo",
+    "orgnr": "111 111 111",
+    "telefon": "22 22 22 22",
+    "epost": "firma@epost.no"
 }
-
