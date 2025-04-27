@@ -75,37 +75,46 @@ class DatabaseHandler:
             raise RuntimeError(f"Databasefeil under execute_and_commit: {e}") from e
 
     # --- Metoder for Kunde ---
-    def sett_inn_kunde(self, fornavn, etternavn, adresse, postnr):
-        """ Setter inn en ny kunde. """
+    def sett_inn_kunde(self, fornavn, etternavn, adresse, postnr, telefon=None, epost=None, is_active=True):
+        """ Setter inn en ny kunde, inkludert is_active-status. """
         try:
-            spørring = "INSERT INTO kunde (Fornavn, Etternavn, Adresse, PostNr) VALUES (%s, %s, %s, %s);"
-            params = (fornavn, etternavn, adresse, postnr)
+            spørring = """
+                INSERT INTO kunde (Fornavn, Etternavn, Adresse, PostNr, is_active)
+                VALUES (%s, %s, %s, %s, %s);
+            """
+            params = (fornavn, etternavn, adresse, postnr, int(is_active))
             logging.debug(f"Utfører sett_inn_kunde med params: {params}")
-            rowcount = self.db.execute(spørring, params) # Steg 1: Execute
-            self.db.commit() # Steg 2: Commit
+            rowcount = self.db.execute(spørring, params)
+            self.db.commit()
             logging.info(f"Resultat fra sett_inn_kunde: {rowcount} rader påvirket.")
-            # last_id = self.db.get_last_row_id() # Kan hentes etter execute om nødvendig
-            # return last_id
         except Exception as e:
             logging.exception("Feil ved sett_inn_kunde")
-            try: self.db.rollback() # Rollback ved feil
-            except Exception as rb_err: logging.error(f"Feil under rollback i sett_inn_kunde: {rb_err}")
+            try:
+                self.db.rollback()
+            except Exception as rb_err:
+                logging.error(f"Feil under rollback i sett_inn_kunde: {rb_err}")
             raise RuntimeError(f"Databasefeil ved innsetting av kunde: {e}") from e
 
-    def oppdater_kunde(self, knr, fornavn, etternavn, adresse, postnr):
-        """ Oppdaterer en eksisterende kunde. """
+    def oppdater_kunde(self, knr, fornavn, etternavn, adresse, postnr, telefon=None, epost=None, is_active=True):
+        """ Oppdaterer en eksisterende kunde inkludert is_active. """
         try:
-            spørring = "UPDATE kunde SET Fornavn = %s, Etternavn = %s, Adresse = %s, PostNr = %s WHERE KNr = %s;"
-            params = (fornavn, etternavn, adresse, postnr, knr)
+            spørring = """
+                UPDATE kunde
+                SET Fornavn = %s, Etternavn = %s, Adresse = %s, PostNr = %s, is_active = %s
+                WHERE KNr = %s;
+            """
+            params = (fornavn, etternavn, adresse, postnr, int(is_active), knr)
             logging.debug(f"Utfører oppdater_kunde for KNr {knr} med params: {params}")
-            rowcount = self.db.execute(spørring, params) # Steg 1: Execute
-            self.db.commit() # Steg 2: Commit
+            rowcount = self.db.execute(spørring, params)
+            self.db.commit()
             logging.info(f"Resultat fra oppdater_kunde for KNr {knr}: {rowcount} rader påvirket.")
             return rowcount
         except Exception as e:
             logging.exception(f"Feil ved oppdater_kunde for KNr {knr}")
-            try: self.db.rollback() # Rollback ved feil
-            except Exception as rb_err: logging.error(f"Feil under rollback i oppdater_kunde: {rb_err}")
+            try:
+                self.db.rollback()
+            except Exception as rb_err:
+                logging.error(f"Feil under rollback i oppdater_kunde: {rb_err}")
             raise RuntimeError(f"Databasefeil ved oppdatering av kunde {knr}: {e}") from e
 
     def insert_faktura(self, ordre_nr, kunde_nr):
