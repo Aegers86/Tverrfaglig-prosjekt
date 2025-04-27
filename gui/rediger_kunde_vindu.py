@@ -1,5 +1,4 @@
 # gui/rediger_kunde_vindu.py
-
 import tkinter as tk
 from tkinter import messagebox
 import logging
@@ -24,10 +23,12 @@ def vis_rediger_kunde_vindu(main_window, kunde_data):
     main_window.rydd_innhold()
     main_window.status_label.config(text=f"Redigerer kunde {knr}")
 
-    felter = _lag_kundefelter(main_window.innhold_frame, kunde_data)
+    felter, is_active_var = _lag_kundefelter(main_window.innhold_frame, kunde_data)
 
     def lagre_endringer():
         verdier = {k: v.get().strip() for k, v in felter.items()}
+        is_active = bool(is_active_var.get())
+
         feil = valider_kundefelter(verdier)
         if feil:
             vis_advarsel("Valideringsfeil", "\n".join(feil))
@@ -35,13 +36,30 @@ def vis_rediger_kunde_vindu(main_window, kunde_data):
         try:
             main_window.db.oppdater_kunde(
                 knr,
-                verdier["fornavn"], verdier["etternavn"],
-                verdier["adresse"], verdier["postnr"],
-                verdier.get("telefon"), verdier.get("epost")
+                verdier["fornavn"],
+                verdier["etternavn"],
+                verdier["adresse"],
+                verdier["postnr"],
+                None,
+                None,
+                is_active=is_active
             )
             logging.info(f"Kunde {knr} oppdatert.")
+
+            # --- Vis status etter lagring ---
+            status = main_window.db.hent_en(
+                "SELECT is_active FROM kunde WHERE KNr = %s;",
+                (knr,)
+            )
+            if status:
+                aktiv = status.get("is_active")
+                print(f"Etter oppdatering: Kunde {knr} aktiv status i databasen er: {aktiv}")
+            else:
+                print(f"⚠️ Klarte ikke hente status for kunde {knr} etter oppdatering.")
+
             from gui.kunde_vindu import vis_kunder
             vis_kunder(main_window)
+
         except Exception as e:
             logging.error(f"Feil ved oppdatering av kunde: {e}", exc_info=True)
             vis_feil("Feil", f"Klarte ikke å oppdatere kunde: {e}")
@@ -76,8 +94,16 @@ def _lag_kundefelter(master, data=None):
 
         entries[key] = entry
 
+    # Avkrysningsboks for Aktiv/Passiv status
+    is_active_var = tk.IntVar(value=1)
+    if data and len(data) > 5:
+        is_active_var.set(1 if str(data[5]) in ("1", "True", "true") else 0)
+
+    chk = tk.Checkbutton(container, text="Aktiv kunde", variable=is_active_var)
+    chk.grid(row=len(felt_definisjoner), column=0, columnspan=2, sticky="w", padx=5, pady=5)
+
     container.columnconfigure(1, weight=1)
-    return entries
+    return entries, is_active_var
 
 def _tilbake_til_kunder(main_window):
     from gui.kunde_vindu import vis_kunder
