@@ -8,6 +8,9 @@ from decimal import Decimal, InvalidOperation
 from gui.ny_kunde_vindu import vis_ny_kunde_vindu
 from gui.rediger_kunde_vindu import vis_rediger_kunde_vindu
 
+# Importer utils-funksjoner
+from utils.treeview_scroll import legg_til_scrollbar
+
 try:
     from utils.validators import valider_kundefelter
     from utils.feedback import vis_feil, vis_advarsel
@@ -123,7 +126,10 @@ def vis_kunder(main_window):
     status_info_label = tk.Label(main_window.innhold_frame, text="", anchor="w")
     status_info_label.pack(fill="x", padx=10, pady=(0, 5))
 
+    # Treeview
     tree = ttk.Treeview(main_window.innhold_frame, show="headings")
+    legg_til_scrollbar(main_window.innhold_frame, tree)  # <--- Legg scrollbar her
+
     tree_columns = ("KNr", "Fornavn", "Etternavn", "Adresse", "PostNr")
     tree["columns"] = tree_columns
 

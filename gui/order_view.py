@@ -9,11 +9,14 @@ from decimal import Decimal
 try:
     from utils.feedback import vis_feil, vis_advarsel
     from gui.gui_helpers import sort_treeview_column, formater_dato_norsk
+    from utils.treeview_scroll import legg_til_scrollbar
 except ImportError:
     def vis_feil(tittel, melding): messagebox.showerror(tittel, melding)
     def vis_advarsel(tittel, melding): messagebox.showwarning(tittel, melding)
     def sort_treeview_column(tree, col, reverse): pass
     def formater_dato_norsk(dato_str): return dato_str
+    def legg_til_scrollbar(parent, tree): pass
+
 
 # --- Import av PDFGenerator ---
 try:
@@ -85,7 +88,7 @@ def _vis_ny_ordre_form(main_window):
 
 # --- Viser ordreoversikten ---
 def vis_ordrer(main_window):
-    from gui.vis_ordredetaljer_vindu import åpne_ordredetaljer_vindu  # Import her for å unngå sirkulær import
+    from gui.vis_ordredetaljer_vindu import åpne_ordredetaljer_vindu
 
     main_window.oppdater_navigasjon(["Hoved", "Ordre"])
     main_window.status_label.config(text="Laster ordrevisning...")
@@ -98,8 +101,11 @@ def vis_ordrer(main_window):
     search_entry = tk.Entry(search_frame)
     search_entry.pack(side="left", fill="x", expand=True, padx=5)
 
-    # Tabell
-    tree = ttk.Treeview(main_window.innhold_frame, show="headings")
+    # --- Container for treeview + scrollbar ---
+    tree_frame = tk.Frame(main_window.innhold_frame)
+    tree_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+    tree = ttk.Treeview(tree_frame, show="headings")
     tree_columns = ("OrdreNr", "OrdreDato", "SendtDato", "BetaltDato", "KNr", "Kundenavn")
     tree["columns"] = tree_columns
 
@@ -108,12 +114,19 @@ def vis_ordrer(main_window):
         tree.column(col, width=100, anchor="w")
     tree.column("OrdreNr", width=80, anchor="center")
     tree.column("KNr", width=60, anchor="center")
-    tree.pack(fill="both", expand=True, padx=10, pady=10)
 
-    # 🎯 Legg til dobbeltklikk-binding på treet
+    # Scrollbar
+    scrollbar = ttk.Scrollbar(tree_frame, orient="vertical", command=tree.yview)
+    tree.configure(yscrollcommand=scrollbar.set)
+
+    # Pakk treeview og scrollbar side ved side
+    tree.pack(side="left", fill="both", expand=True)
+    scrollbar.pack(side="right", fill="y")
+
+    # 🎯 Dobbeltklikk for å åpne detaljer
     tree.bind("<Double-1>", lambda event: åpne_ordredetaljer_vindu(main_window, tree))
 
-    # Søke-knapp
+    # Søkeknapp
     search_button = tk.Button(search_frame, text="Søk",
                               command=lambda: _perform_order_search(main_window, search_entry, tree))
     search_button.pack(side="left", padx=(5, 0))
@@ -256,4 +269,3 @@ def vis_ordredetaljer(main_window, tree):
          tk.Label(knapp_frame_detaljer, text="(PDF-modul mangler)", fg="grey").pack(side="left")
 
     main_window.status_label.config(text=f"Detaljer for ordre {ordre_nr} lastet.")
-# --- Slutt på komplett vis_ordredetaljer ---
