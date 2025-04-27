@@ -148,7 +148,7 @@ class MainWindow:
             self.status_label.config(text="Feil ved lasting av oversikt")
 
     def vis_salgsgraf(self, parent_frame):
-        """ Viser graf over salg siste 5 år, og lagrer bildet i static/ """
+        """ Viser graf over salg siste 7 år som stolpediagram, lagrer i static/ """
         try:
             nå = datetime.now()
             start_år = nå.year - 6
@@ -163,23 +163,31 @@ class MainWindow:
                 total = result.get('total', 0) if result else 0
                 salgstall.append(float(total or 0))
 
-            fig = Figure(figsize=(6, 3.5), dpi=100)
+            fig = Figure(figsize=(7, 4), dpi=100)
             ax = fig.add_subplot(111)
-            ax.plot(årstall, salgstall, marker='o', linestyle='-', color='blue')
-            ax.set_title("Salg siste 5 år")
+
+            # Stolpediagram (ikke linje)
+            ax.bar(årstall, salgstall, color='steelblue', width=0.5)
+
+            ax.set_title("Salg siste 7 år")
             ax.set_xlabel("År")
             ax.set_ylabel("Omsetning (kr)")
-            ax.grid(True)
+            ax.grid(axis='y', linestyle='--', alpha=0.7)
 
-            # Vis grafen i GUI
+            # Formater y-aksen til å vise kr med tusenskilletegn
+            from matplotlib.ticker import FuncFormatter
+            def tusen_format(x, pos):
+                return f"{int(x):,}".replace(",", " ") + " kr"
+
+            ax.yaxis.set_major_formatter(FuncFormatter(tusen_format))
+
             canvas = FigureCanvasTkAgg(fig, master=parent_frame)
             canvas.draw()
             canvas.get_tk_widget().pack(fill="both", expand=True, pady=10)
 
-            # Lagre som PNG
             os.makedirs("static", exist_ok=True)
-            fig.savefig(os.path.join("static", "salg_siste_5_år.png"))
-            logging.info("Salgsgraf lagret til static/salg_siste_5_år.png")
+            fig.savefig(os.path.join("static", "salg_siste_7_år.png"))
+            logging.info("Salgsgraf lagret til static/salg_siste_7_år.png")
 
         except Exception as e:
             logging.error(f"Feil under generering av salgsgraf: {e}", exc_info=True)

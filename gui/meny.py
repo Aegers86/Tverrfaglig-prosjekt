@@ -14,9 +14,9 @@ def lag_menylinje(root, main_window):
     menylinje.add_cascade(label="Fil", menu=filmeny)
 
     vis_meny = tk.Menu(menylinje, tearoff=0)
-    vis_meny.add_command(label="Kunder", command=lambda: main_window.vis_kunder())
-    vis_meny.add_command(label="Ordrer", command=lambda: main_window.vis_ordrer())
-    vis_meny.add_command(label="Varelager", command=lambda: main_window.vis_varer())
+    vis_meny.add_command(label="Kunder", command=main_window.navigasjon_map["Kunder"])
+    vis_meny.add_command(label="Ordrer", command=main_window.navigasjon_map["Ordre"])
+    vis_meny.add_command(label="Varelager", command=main_window.navigasjon_map["Varelager"])
     menylinje.add_cascade(label="Vis", menu=vis_meny)
 
     hjelpmeny = tk.Menu(menylinje, tearoff=0)
