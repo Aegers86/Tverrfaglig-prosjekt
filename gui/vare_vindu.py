@@ -1,6 +1,17 @@
 # gui/vare_vindu.py
-
+# -*- coding: utf-8 -*-
+# Importer nødvendige moduler
+import tkinter as tk
 from tkinter import ttk, messagebox
+import logging
+from decimal import Decimal, InvalidOperation
+
+# Importer egen scrollbar-funksjon
+try:
+    from utils.treeview_scroll import legg_til_scrollbar
+except ImportError:
+    def legg_til_scrollbar(parent, tree): pass
+
 # Sørg for at disse utils-filene finnes og er korrekte
 try:
     from utils.feedback import vis_feil, vis_advarsel
@@ -67,52 +78,91 @@ def sort_treeview_column(tree, col, reverse):
         logging.error(f"Uventet feil under sortering av kolonne '{col}': {e}", exc_info=True)
 # --- SLUTT PÅ INKLUDERT sorteringsfunksjon ---
 
-
-# --- vis_varer (OPPDATERT med sortering) ---
+# --- vis_varer (OPPDATERT med søkefelt og scrollbar) ---
 def vis_varer(main_window):
-    """ Viser en liste over varer på lager med kolonnesortering. """
     main_window.oppdater_navigasjon(["Hoved", "Varelager"])
     main_window.status_label.config(text="Laster varelager...")
     main_window.rydd_innhold()
 
-    try:
-        query = "SELECT VNr, Betegnelse, Antall, Pris FROM vare ORDER BY Betegnelse ASC;"
-        data = main_window.db.hent_alle(query)
-    except Exception as e:
-        logging.error(f"Feil ved henting av varelager: {e}", exc_info=True)
-        vis_feil("Databasefeil", f"Feil ved henting av varelager: {e}")
-        main_window.status_label.config(text="Feil ved lasting av varelager")
-        return
+    # --- Søkefelt øverst ---
+    search_frame = tk.Frame(main_window.innhold_frame)
+    search_frame.pack(fill="x", padx=10, pady=(5, 0))
 
-    tree = ttk.Treeview(main_window.innhold_frame, show="headings")
+    tk.Label(search_frame, text="Søk (Varenr, Navn):").pack(side="left", padx=(0, 5))
+    search_entry = tk.Entry(search_frame)
+    search_entry.pack(side="left", fill="x", expand=True, padx=5)
+
+    # --- Container for Treeview og Scrollbar ---
+    tree_frame = tk.Frame(main_window.innhold_frame)
+    tree_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+    tree = ttk.Treeview(tree_frame, show="headings")
     tree_columns = ("VNr", "Betegnelse", "Antall", "Pris")
     tree["columns"] = tree_columns
 
-    tree.heading("VNr", text="Varenr", command=lambda c="VNr": sort_treeview_column(tree, c, False))
-    tree.column("VNr", width=100, anchor="w")
-    tree.heading("Betegnelse", text="Navn", command=lambda c="Betegnelse": sort_treeview_column(tree, c, False))
+    for col in tree_columns:
+        tree.heading(col, text=col, command=lambda c=col: sort_treeview_column(tree, c, False))
+        tree.column(col, width=100, anchor="w")
     tree.column("Betegnelse", width=250, anchor="w")
-    tree.heading("Antall", text="Antall på lager", command=lambda c="Antall": sort_treeview_column(tree, c, False))
     tree.column("Antall", width=100, anchor="center")
-    tree.heading("Pris", text="Pris (NOK)", command=lambda c="Pris": sort_treeview_column(tree, c, False))
     tree.column("Pris", width=100, anchor="e")
 
-    data_length = 0
-    if data:
-        for row in data:
-            try:
-                pris_decimal = Decimal(row["Pris"]) if row["Pris"] is not None else Decimal('0.00')
-                pris_str = f"{pris_decimal:.2f}"
-            except (InvalidOperation, TypeError, KeyError) as price_err:
-                logging.warning(f"Kunne ikke formatere pris for vare {row.get('VNr', '?')}: {row.get('Pris')} ({price_err})")
-                pris_str = "Ugyldig"
+    legg_til_scrollbar(tree_frame, tree)
+    tree.pack(side="left", fill="both", expand=True)
 
-            formatted_row = (row.get("VNr"), row.get("Betegnelse"), row.get("Antall"), pris_str)
-            tree.insert("", "end", values=formatted_row)
-            data_length += 1
+    # --- Funksjon for å søke varer ---
+    def perform_item_search():
+        search_term = search_entry.get().strip()
+        try:
+            for i in tree.get_children():
+                tree.delete(i)
+        except tk.TclError:
+            pass
 
-    tree.pack(fill="both", expand=True, padx=10, pady=10)
+        try:
+            base_query = "SELECT VNr, Betegnelse, Antall, Pris FROM vare"
+            where_clause = ""
+            params = []
 
-    status_text = f"Varelager lastet ({data_length} varer)." if data else "Varelageret er tomt."
-    main_window.status_label.config(text=status_text)
-    logging.info(status_text)
+            if search_term:
+                pattern = f"%{search_term}%"
+                where_clause = """
+                    WHERE CAST(VNr AS CHAR) LIKE %s
+                       OR Betegnelse LIKE %s
+                """
+                params = [pattern, pattern]
+
+            final_query = base_query + (" " + where_clause if where_clause else "") + " ORDER BY Betegnelse ASC;"
+            data = main_window.db.hent_alle(final_query, tuple(params))
+
+            data_length = 0
+            if data:
+                for row in data:
+                    try:
+                        pris_decimal = Decimal(row["Pris"]) if row["Pris"] is not None else Decimal('0.00')
+                        pris_str = f"{pris_decimal:.2f}"
+                    except (InvalidOperation, TypeError, KeyError):
+                        pris_str = "Ugyldig"
+
+                    formatted_row = (row.get("VNr"), row.get("Betegnelse"), row.get("Antall"), pris_str)
+                    tree.insert("", "end", values=formatted_row)
+                    data_length += 1
+
+            if search_term:
+                main_window.status_label.config(text=f"Søkeresultat for '{search_term}': {data_length} treff.")
+            else:
+                main_window.status_label.config(text=f"Varelager lastet ({data_length} varer).")
+
+        except Exception as e:
+            logging.error(f"Feil ved søk i varelager: {e}", exc_info=True)
+            vis_feil("Databasefeil", f"Feil ved søk i varelager: {e}")
+            main_window.status_label.config(text="Feil under søk i varelager")
+
+    # --- Søkeknapp ---
+    search_button = tk.Button(search_frame, text="Søk", command=perform_item_search)
+    search_button.pack(side="left", padx=(5, 0))
+
+    search_entry.bind("<Return>", lambda event: perform_item_search())
+
+    # --- Laster varer ved første åpning ---
+    perform_item_search()
