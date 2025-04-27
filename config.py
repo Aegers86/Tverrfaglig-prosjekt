@@ -1,10 +1,7 @@
 # config.py
-# ✅ Konfigurasjonsfil for Flask, database og logging
-
 import os
 from dotenv import load_dotenv
 
-# Last inn miljøvariabler
 load_dotenv()
 
 # Flask-konfigurasjon
@@ -45,4 +42,10 @@ FIRMA_INFO = {
     "orgnr": "111 111 111",
     "telefon": "22 22 22 22",
     "epost": "firma@epost.no"
+}
+
+# Kontrollflagg for database
+DATABASE_FLAGS = {
+    'is_active_added': True,
+    'faktura_table_created': True,
 }
