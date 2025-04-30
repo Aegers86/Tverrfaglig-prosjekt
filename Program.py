@@ -72,11 +72,28 @@ class GUI:
             self.tree.column(col, width=100, anchor="center")                                       #Setter bredde og justerer for kolonnen
 
     def hentVarerPåLager(self):                                                                     #Funksjon for å hente varer på lager
-        self.tømTre()                                                                               #Kjører funksjonen for å tømme treet
-        self.oppdaterKolonner(("varenummer", "Betegnelse", "Pris", "Antall"))                       #Oppdaterer kolonnene
-        data = self.db.fetch_all("SELECT * FROM vare WHERE antall > 0 ORDER BY antall DESC;")       #Variabel som lagrer data som er hentet fra databasen og sier at den skal vise i synkende rekkefølge når den senere kalles. 
-        for i in data:                                                                              #Henter dataene som ligger i data
-            self.tree.insert("", "end", values=i)                                                   #Setter inn data i treet
+        #Lager nytt vindu for alle varer
+        varelager_window = tk.Toplevel(self.root)                                                               #Lager popupvindu
+        varelager_window.title("Varer")                                                                         #Setter navn på popupvindu
+        varelager_window.geometry("1080x400")                                                                   #Setter størrelse på popupvinduet
+                                                              
+        # Treeview varedetaljer detaljer
+        self.vare_tree = ttk.Treeview(varelager_window, show="headings")                                        #Lager Treeview for å vise vare detaljer
+        self.vare_tree.pack(fill="both", expand=True, padx=10, pady=10, side="left")                            #Setter størrelse og plassering i GUI. 
+
+        # Legger til scrollbar for Treeview i nytt vindu
+        vare_vsb = ttk.Scrollbar(varelager_window, orient="vertical", command=self.vare_tree.yview)             #Lager Treeview for å vise vare detaljer i nytt vindu
+        vare_vsb.pack(side="right", fill="y")                                                                   #Setter størrelse og plassering i GUI.
+        self.vare_tree.configure(yscrollcommand=vare_vsb.set)                                                   #Kobler sammen treet og scrollbaren
+
+        # Henter varer
+        self.vare_tree["columns"] = ("varenummer", "Betegnelse", "Pris", "Antall")                              #Setter inn kolonner
+        for col in self.vare_tree["columns"]:                                                                   #for loop som den kjører gjennom
+            self.vare_tree.heading(col, text=col)                                                               #Setter overskrift
+            self.vare_tree.column(col, width=100, anchor="center")                                              #Setter størrelse på varetreet
+        data = self.db.fetch_all("SELECT * FROM vare WHERE antall > 0 ORDER BY antall DESC;")                   #Variabel som lagrer data som er hentet fra databasen og sier at den skal vise i synkende rekkefølge når den senere kalles. 
+        for i in data:                                                                                          #Henter dataene som ligger i data
+            self.vare_tree.insert("", "end", values=i)                                                          #Setter inn data i treet
 
     def hentAlleOrdrer(self):                                                                             #Funksjon for å hente orderer
         self.tømTre()                                                                                     #Kjører funksjonen for å tømme treet
@@ -158,7 +175,7 @@ class GUI:
         pdfgen.generate_invoice(ordre,ordrelinjer,kunde,faktura_nummer)                                                                                                            #Genererer PDF med informasjon lagret i variablene over
     
     def hentAlleKunder(self):                                                                               #Funksjon for å se kundedb med stored procedures
-        #Lager nytt vindu for ordre detaljer
+        #Lager nytt vindu for alle kunder
         kunde_window = tk.Toplevel(self.root)                                                               #Lager popupvindu
         kunde_window.title("Kunde")                                                                         #Setter navn på popupvindu basert på ordrenummer
         kunde_window.geometry("1080x400")                                                                   #Setter størrelse på popupvinduet
@@ -168,7 +185,7 @@ class GUI:
         AdministrerKunde = tk.Button(kunde_window, text="Administrer kunde", command=lambda: self.administrerKundeVindu())  #Lager knapp som heter "Administrer kunde" og kjører funksjonen update_kunde() i db.py
         AdministrerKunde.pack(pady=10) 
                                                               
-        # Treeview ordredetaljer detaljer
+        # Treeview kundedetaljer detaljer
         self.kunde_tree = ttk.Treeview(kunde_window, show="headings")                                       #Lager Treeview for å vise ordre detaljer
         self.kunde_tree.pack(fill="both", expand=True, padx=10, pady=10, side="left")                       #Setter størrelse og plassering i GUI. 
 
@@ -198,7 +215,6 @@ class GUI:
         close_button.pack(padx=10)                                                                                                      #Setter lukkeknapp i vinduet
 
     def administrerKundeVindu(self):                                                                      #Funksjon for å se kundedb med stored procedures
-        
         selected_item = self.kunde_tree.selection()                                                       #Lagrer valget ditt (klikket ditt) i variablen selected_item
         if not selected_item:                                                                             #En if statement som kjører dersom du ikke velger noe/klikker på et tomt element
             messagebox.showwarning("Ingen valgt", "Vennligst velg en kunde.")
@@ -274,7 +290,6 @@ class GUI:
         self.kunde_window.destroy()                                                                                    #Lukker vinduet etter oppdatering
 
     def opprettKunde(self):                                                                                            #Funksjon for å se kundedb med stored procedures
-
         #Lager nytt vindu for ordre detaljer
         self.kunde_window = tk.Toplevel(self.root)                                                                     #Lager popupvindu
         self.kunde_window.title("Kunde")                                                                               #Setter navn på popupvindu basert på ordrenummer
@@ -288,7 +303,6 @@ class GUI:
         self.kunde_window.rowconfigure(4, minsize=5)
         self.kunde_window.rowconfigure(5, minsize=5)
         self.kunde_window.rowconfigure(6, minsize=5)        
-
                                                                       
         self.labelFornavn = tk.Label(self.kunde_window, text="Fornavn: ")
         self.labelFornavn.grid(row=1, column=0, padx=10, pady=10, sticky="e")                                          #Setter størrelse på popupvinduet
@@ -313,7 +327,7 @@ class GUI:
         self.lagreKunde = tk.Button(self.kunde_window, text="Lagre kunde", command=lambda: self.lagreKundeiDb())        #Lager knapp som heter "Lagre kunde" og kjører funksjonen insert_kunde() i db.py
         self.lagreKunde.grid(row=6, column=1, padx=10, pady=10, sticky="nsew")
                                                                         
-    def lagreKundeiDb(self):  #Lager knapp som heter "Lagre kunde" og kjører funksjonen insert_kunde() i db.py
+    def lagreKundeiDb(self):  
         self.db.insert_kunde(self.fornavn_box.get(), self.etternavn_box.get(), self.addresse_box.get(), self.postnr_box.get())  #Lager entryboks for fornavn
         self.kunde_window.destroy()                                                         
         self.kunde_tree.delete(*self.kunde_tree.get_children())                                                         #Tømmer kunde_tree før oppdatering
@@ -329,7 +343,6 @@ class GUI:
 
 
     def slettKunde(self):                                                                                               #Funksjon for å se kundedb med stored procedures
-
         if messagebox.askyesnocancel("Slette kunde", "Er du sikker på at du vil slette kunden?"):                       #Oppretter messagebox
             self.db.update_one("UPDATE kunde SET is_active = '0' WHERE KNr = %s;", (self.kundenummer_box.get(),))       #Oppdaterer databasen med slettingen av kundenummeret som er valgt i treeviewen.
             self.kunde_tree.delete(*self.kunde_tree.get_children())                                                     #Tømmer kunde_tree før oppdatering
@@ -342,8 +355,6 @@ class GUI:
             data = self.db.call_procedure("hent_alle_kunder")                                                           #Henter data fra databasen med følgende store procedures: "SELECT * FROM varehusdb.kunde;"
             for i in data:                                                                                              #Henter dataene som ligger i variablen data
                 self.kunde_tree.insert("", "end", values=i)  
-            
-
             self.kunde_window.destroy()
 
 GUI()  #Starter GUI
