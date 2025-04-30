@@ -68,5 +68,15 @@ class PDFGenerator:
 
 
         # Build PDF
-        doc.build(elements)
+        doc.build(elements, onFirstPage=add_footer, onLaterPages=add_footer)  #Legger til Footer på regninger
         os.startfile(pdf_filename)
+
+from reportlab.lib.units import mm
+
+def add_footer(canvas, doc):                                                  # Script for å legge til statisk footer
+    footer_text = "Gruppe 1 AS | +47 911 | Gymnasvegen 27 | Org.nr: 987237910MVA"
+    canvas.saveState()
+    canvas.setFont("Helvetica-Bold", 8)
+    canvas.setFillColor(colors.grey)
+    canvas.drawCentredString(A4[0] / 2.0, 15 * mm, footer_text)  # 15 mm from bottom
+    canvas.restoreState()

@@ -1,12 +1,10 @@
-
+# app.py - Flask-applikasjonen for handel og lagerstyring
 from flask import Flask, render_template, jsonify
 from api.api import api_blueprint
 from database.database import Database
 import logging
 import config
 from database.populate_database import populate_database  # ✅ Importer og kjør
-
-#app.py - Flask-applikasjonen for handel og lagerstyring
 
 # ✅ Initialiser Flask-applikasjonen
 app = Flask(__name__)
@@ -43,6 +41,8 @@ def home():
             """
             SELECT 
                 (SELECT COUNT(*) FROM kunde),
+                (SELECT COUNT(*) FROM ordre),
+                (SELECT COUNT(*) FROM vare),
                 (SELECT COUNT(*) FROM ordre WHERE betalt_dato IS NOT NULL),
                 (SELECT COUNT(*) FROM ordre WHERE betalt_dato IS NULL)
             """
@@ -93,4 +93,3 @@ def ordrer():
 if __name__ == "__main__":
     logging.info(f"🚀 Flask-server starter på http://{config.FLASK_CONFIG['HOST']}:{config.FLASK_CONFIG['PORT']} 🚀")
     app.run(debug=config.FLASK_CONFIG["DEBUG"], host=config.FLASK_CONFIG["HOST"], port=config.FLASK_CONFIG["PORT"])
-    print(f"🚀 Flask-server starter på http://{config.FLASK_CONFIG['HOST']}:{config.FLASK_CONFIG['PORT']} 🚀")
