@@ -56,7 +56,18 @@ class GUI:
 
         self.root.protocol("WM_DELETE_WINDOW", self.terminate)                                      #Håndterer lukking av vinduet
         self.root.mainloop()                                                                        #Starter hovedløkken
-
+   
+    #Dette er en dekoratør, den brukes for å legge til feilhåndtering uten å endre den opprinnelige funksjonen direkte. Vi benytter en wrapper som tar imot alle argumentene som sendes til den opprinnelige funksjonen og prøver å kjøre funksjonen med argumentene. Hvis det oppstår en feil vil wrapperen fange feilen og printe beskjed til terminalen da det er det vi sagt den skal gjøre dersom det oppstår en feil. 
+    @staticmethod                                                                            
+    def sikkerhetsSjekk(func):                                                                      #Funksjon for å sjekke om det skjer feil med funksjonen 
+        def wrapper(*args, **kwargs):                                                               #Wrapper funksjoner for å håndtere feil
+            try:
+                return func(*args, **kwargs)                                                        #Kjører funksjonen som er sendt inn, med parametere
+            except Exception as e:                                                                  #Hvis det skjer en feil, så kjører vi koden under
+                print(f"feil på funksjon {func.__name__}: {e}")                                     #Printer feilmeldingen i terminal og viser hvilken funksjon det er snakk om
+                messagebox.showerror("Feil", f"Det skjedde en feil: {e}")                           #Viser feilmeldingen i en messagebox
+        return wrapper                                                                              #Returnerer wrapperen
+    
     def terminate(self):                                                                            #Funksjon for å avslutte/terminere programmet
         if messagebox.askyesno("Avslutt", "Er du sikker på at du vil avslutte?"):                   #Spør om brukeren er sikker, opprettet vindu med messagebox modul
             self.root.destroy()                                                                     #Lukker vinduet
@@ -71,6 +82,7 @@ class GUI:
             self.tree.heading(col, text=col)                                                        #Setter overskrift i kolonnen
             self.tree.column(col, width=100, anchor="center")                                       #Setter bredde og justerer for kolonnen
 
+    @sikkerhetsSjekk
     def hentVarerPåLager(self):                                                                     #Funksjon for å hente varer på lager
         #Lager nytt vindu for alle varer
         varelager_window = tk.Toplevel(self.root)                                                               #Lager popupvindu
@@ -95,6 +107,7 @@ class GUI:
         for i in data:                                                                                          #Henter dataene som ligger i data
             self.vare_tree.insert("", "end", values=i)                                                          #Setter inn data i treet
 
+    @sikkerhetsSjekk
     def hentAlleOrdrer(self):                                                                             #Funksjon for å hente orderer
         self.tømTre()                                                                                     #Kjører funksjonen for å tømme treet
         self.oppdaterKolonner(("Ordrenummer", "Ordre dato", "Dato sendt", "Betalt Dato", "Kundenummer"))  #Oppdaterer kolonnene
@@ -102,6 +115,7 @@ class GUI:
         for i in data:                                                                                    #Henter dataene som ligger i data
             self.tree.insert("", "end", values=i)                                                         #Setter inn data i treet
 
+    @sikkerhetsSjekk
     def visInfoOmOrdre(self, ordreNr):                                                              #Funksjon som tar ett parameter som er ordrenummeret den skal hente informasjon om
         self.tømTre()                                                                               #Kjører funksjonen for å tømme treet
         self.oppdaterKolonner(("Ordrenummer", "Varenummer", "Enhetspris", "Antall"))                #Oppdaterer kolonnene
@@ -109,6 +123,7 @@ class GUI:
         for i in data:                                                                              #Henter dataene som ligger i data
             self.tree.insert("", "end", values=i)                                                   #Setter inn data i treet
 
+    @sikkerhetsSjekk
     def påTreKlikk(self, _):                                                                        #Funksjon som kjøres når du dobbeltklikker på et element i treeview-en
         selected_item = self.tree.selection()                                                       #Lagrer valget ditt (klikket ditt) i variablen selected_item
         if not selected_item:                                                                       #En if statement som kjører dersom du ikke velger noe/klikker på et tomt element
@@ -158,6 +173,7 @@ class GUI:
         Totalsumlabel = tk.Label(details_window, text = f"Totalsum: {Totalsum}")                    #Her lager vi label som vi kaller Totalsumlabel, den viser innholdet i utregningen over
         Totalsumlabel.pack(pady = 100)                                                              #Her definierer vi hvor labelen skal være i visningsvinduet
 
+    @sikkerhetsSjekk
     def printPdf(self):                                                                             #Funksjon for å printe PDF faktura - valgfri oppgave. 
         selected_item = self.tree.selection()                                                       #Variabel for å lagre valget brukeren gjør
         if not selected_item:                                                                       #If statement som kjører hvis man ikke har valgt noe
@@ -173,7 +189,8 @@ class GUI:
         #print(f"ordre {ordre},ordrelinje {ordrelinjer}, kunde {kunde}")                                                                                                           #debugging print, vi lar denne stå for å vise hvordan vi jobbet med å finne rett måte å velge rett index.
         pdfgen = PDFGenerator()                                                                                                                                                    #Initialiserer/kjører PDF-generatoren
         pdfgen.generate_invoice(ordre,ordrelinjer,kunde,faktura_nummer)                                                                                                            #Genererer PDF med informasjon lagret i variablene over
-    
+
+    @sikkerhetsSjekk    
     def hentAlleKunder(self):                                                                               #Funksjon for å se kundedb med stored procedures
         #Lager nytt vindu for alle kunder
         kunde_window = tk.Toplevel(self.root)                                                               #Lager popupvindu
@@ -199,7 +216,7 @@ class GUI:
         for col in self.kunde_tree["columns"]:                                                              #for loop som den kjører gjennom
             self.kunde_tree.heading(col, text=col)                                                          #Setter overskrift
             self.kunde_tree.column(col, width=100, anchor="center")                                         #Forteller at kolonnen skal være 100px bred og midtstilt
-        
+                                                                                                            #Kaller på funksjonen som henter alle kunder fra databasen
         data = self.db.call_procedure("hent_alle_kunder")                                                   #Henter data fra databasen med følgende store procedures: "SELECT * FROM varehusdb.kunde;"
         for i in data:                                                                                      #Henter dataene som ligger i variablen data
             self.kunde_tree.insert("", "end", values=i)  
@@ -270,6 +287,7 @@ class GUI:
         self.lagreKunde = tk.Button(self.kunde_window, text="Lagre kunde", command=lambda: self.oppdaterKundeiDb())    #Lager knapp som heter "Lagre kunde" og kjører funksjonen insert_kunde() i db.py
         self.lagreKunde.grid(row=6, column=1, padx=10, pady=10, sticky="nsew")                                         #Pakker det hele sammen. Vi velger også å vise kundedataene til venstre i visningsvinduet
 
+    @sikkerhetsSjekk    
     def oppdaterKundeiDb(self):  #Lager knapp som heter "Lagre kunde" og kjører funksjonen insert_kunde() i db.py
         self.db.update_one("UPDATE kunde SET Fornavn = %s, Etternavn = %s, Adresse = %s, PostNr = %s WHERE KNr = %s;", (self.fornavn_box.get(), self.etternavn_box.get(), self.addresse_box.get(), self.postnr_box.get(), self.kundenummer_box.get()))  #Lager entryboks for fornavn
         #print(f"UPDATE kunde SET Fornavn = {self.fornavn_box.get()}, Etternavn = {self.etternavn_box.get()}, Adresse = {self.addresse_box.get()}, PostNr = {self.postnr_box.get()} WHERE KNr = {self.kundenummer_box.get()};")  #Lager entryboks for fornavn
@@ -326,7 +344,8 @@ class GUI:
         
         self.lagreKunde = tk.Button(self.kunde_window, text="Lagre kunde", command=lambda: self.lagreKundeiDb())        #Lager knapp som heter "Lagre kunde" og kjører funksjonen insert_kunde() i db.py
         self.lagreKunde.grid(row=6, column=1, padx=10, pady=10, sticky="nsew")
-                                                                        
+
+    @sikkerhetsSjekk                                                                        
     def lagreKundeiDb(self):  
         self.db.insert_kunde(self.fornavn_box.get(), self.etternavn_box.get(), self.addresse_box.get(), self.postnr_box.get())  #Lager entryboks for fornavn
         self.kunde_window.destroy()                                                         
@@ -341,7 +360,7 @@ class GUI:
         for i in data:                                                                                                  #Henter dataene som ligger i variablen data
             self.kunde_tree.insert("", "end", values=i) 
 
-
+    @sikkerhetsSjekk
     def slettKunde(self):                                                                                               #Funksjon for å se kundedb med stored procedures
         if messagebox.askyesnocancel("Slette kunde", "Er du sikker på at du vil slette kunden?"):                       #Oppretter messagebox
             self.db.update_one("UPDATE kunde SET is_active = '0' WHERE KNr = %s;", (self.kundenummer_box.get(),))       #Oppdaterer databasen med slettingen av kundenummeret som er valgt i treeviewen.
