@@ -8,7 +8,7 @@ import os
 
 class PDFGenerator:                                                             #Klasse for PDF generering
     def generate_invoice(self, ordre, ordrelinjer, kunde, faktura_nummer):      #Funksjon for å hente elementer til PDF-en
-        pdf_filename = f"faktura_{faktura_nummer}.pdf"                                #lager navn på PDF dokumentet faktura_ordrenummer.pdf
+        pdf_filename = f"faktura_{faktura_nummer}.pdf"                          #lager navn på PDF dokumentet fakturanummer.pdf
         doc = SimpleDocTemplate(pdf_filename, pagesize=A4)                      #Setter maltype på dokumentet og setter størrelse
         elements = []                                                           #Tom liste for strukturering i generatoren
         styles = getSampleStyleSheet()                                          #Styleelement (stil) med fonter osv i PDF-en
