@@ -8,7 +8,7 @@ import mysql.connector
 from dotenv import load_dotenv
 import os
 from logs.logs import log_info, log_error
-from database.queries import TABLES
+from queries import TABLES
 
 # Last inn miljøvariabler fra .env
 load_dotenv()
