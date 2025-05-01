@@ -1,18 +1,5 @@
 #Skal denne brukes? sjekk! 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# denne kan sansynligvis slettes
 
 # queries.py
 # Inneholder SQL-spørringer for prosjektet.
