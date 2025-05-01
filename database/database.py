@@ -8,7 +8,6 @@ import mysql.connector
 from dotenv import load_dotenv
 import os
 from logs.logs import log_info, log_error
-from .queries import TABLES
 
 # Last inn miljøvariabler fra .env
 load_dotenv()
@@ -120,31 +119,7 @@ class Database:
         finally:
             self.close()
 
-    def check_and_create_tables(self):
-        """Sjekker om tabeller eksisterer og oppretter dem hvis de ikke finnes."""
-        self.connect()
-        if not self.db:
-            log_error("⚠ Kunne ikke opprette databaseforbindelse.")
-            return
-
-        try:
-            with self.db.cursor() as cursor:
-                cursor.execute(f"CREATE DATABASE IF NOT EXISTS {DB_NAME};")
-                cursor.execute(f"USE {DB_NAME};")
-
-                for table_name, table_sql in TABLES.items():
-                    cursor.execute(table_sql)
-                    log_info(f"Tabell sjekket/opprettet: {table_name}")
-
-                self.db.commit()
-                log_info("Alle nødvendige tabeller er sjekket og opprettet.")
-        except mysql.connector.Error as err:
-            log_error(f"⚠ Feil under oppretting av tabeller: {err}")
-        finally:
-            self.close()
-
 
 # Kjør databaseoppsett hvis filen kjøres direkte
 if __name__ == "__main__":
     db = Database()
-    db.check_and_create_tables()
