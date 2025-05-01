@@ -7,23 +7,23 @@ import config
 
 #app.py - Flask-applikasjonen for handel og lagerstyring
 
-# ✅ Initialiser Flask-applikasjonen
+# Initialiser Flask-applikasjonen
 app = Flask(__name__)
 
-# ✅ Last inn konfigurasjon
+# Last inn konfigurasjon
 app.config.update(config.FLASK_CONFIG)
 
-# ✅ Registrer API-et som blueprint
+# Registrer API-et som blueprint
 app.register_blueprint(api_blueprint, url_prefix=config.API_CONFIG["PREFIX"])
 
-# ✅ Sett opp logging
+# Sett opp logging
 logging.basicConfig(
     level=config.LOGGING_CONFIG["LOG_LEVEL"],
     format="%(asctime)s - %(levelname)s - %(message)s",
     filename=config.LOGGING_CONFIG["LOG_FILE"]
 )
 
-# ✅ Opprett databaseforbindelse
+# Opprett databaseforbindelse
 db = Database()
 
 @app.route("/")
