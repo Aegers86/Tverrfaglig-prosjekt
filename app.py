@@ -1,96 +1,75 @@
+#from flask import Flask, jsonify, request
+from flask_mysqldb import MySQL
+from flask import Flask, render_template_string
+import os
+from dotenv import load_dotenv
 
-from flask import Flask, render_template, jsonify
-from api.api import api_blueprint
-from database.database import Database
-import logging
-import config
-from database.populate_database import populate_database  # ✅ Importer og kjør
+# Load environment variables from .env file
+load_dotenv()
 
-#app.py - Flask-applikasjonen for handel og lagerstyring
-
-# ✅ Initialiser Flask-applikasjonen
 app = Flask(__name__)
 
-# ✅ Last inn konfigurasjon
-app.config.update(config.FLASK_CONFIG)
+# Configure your MySQL connection
+app.config['MYSQL_USER'] = os.getenv('DB_USER')
+app.config['MYSQL_PASSWORD'] = os.getenv('DB_PASSWORD')
+app.config['MYSQL_HOST'] = os.getenv('DB_HOST')
+app.config['MYSQL_PORT'] = int(os.getenv('DB_PORT', 3306))  # Default to 3306 if not found
+app.config['MYSQL_DB'] = os.getenv('DB_NAME')
+mysql = MySQL(app)
 
-# ✅ Registrer API-et som blueprint
-app.register_blueprint(api_blueprint, url_prefix=config.API_CONFIG["PREFIX"])
+# HTML-mal som inneholder en enkel tabell
+HTML_TEMPLATE = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Varelager</title>
+    <style>
+        table { border-collapse: collapse; width: 70%; margin: 20px auto; }
+        th, td { border: 1px solid #888; padding: 8px 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        h1 { text-align: center; font-family: sans-serif; }
+    </style>
+</head>
+<body>
+    <h1>Varelager</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>VNr</th>
+                <th>Betegnelse</th>
+                <th>Antall</th>
+                <th>Pris</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vare in varer %}
+            <tr>
+                <td>{{ vare.Vnr }}</td>
+                <td>{{ vare.Betegnelse }}</td>
+                <td>{{ vare.Antall }}</td>
+                <td>{{ vare.Pris }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
+"""
 
-# ✅ Sett opp logging
-logging.basicConfig(
-    level=config.LOGGING_CONFIG["LOG_LEVEL"],
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    filename=config.LOGGING_CONFIG["LOG_FILE"]
-)
+@app.route('/varer')
+def vis_varer_html():
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT Vnr, Betegnelse, Antall, Pris FROM vare")
+    varer_data = cur.fetchall()
+    cur.close()
 
-# ✅ Opprett databaseforbindelse
-db = Database()
+    # Konverter til liste av ordbøker
+    varer = [
+        {'Vnr': row[0], 'Betegnelse': row[1], 'Antall': row[2], 'Pris': float(row[3])}
+        for row in varer_data
+    ]
 
-# ✅ Kjør populate_database ved oppstart
-try:
-    logging.info("🔄 Kjører `populate_database.py` for å sikre testdata...")
-    populate_database()
-    logging.info("✅ Databasen er fylt med testdata!")
-except Exception as e:
-    logging.error(f"⚠ Feil ved kjøring av `populate_database.py`: {e}")
+    return render_template_string(HTML_TEMPLATE, varer=varer)
 
-@app.route("/")
-def home():
-    """Hovedsiden med nøkkeltall fra databasen."""
-    try:
-        stats = db.fetch_one(
-            """
-            SELECT 
-                (SELECT COUNT(*) FROM kunde),
-                (SELECT COUNT(*) FROM ordre WHERE betalt_dato IS NOT NULL),
-                (SELECT COUNT(*) FROM ordre WHERE betalt_dato IS NULL)
-            """
-        )
-        return render_template("index.html", stats=stats)
-    except Exception as e:
-        logging.error(f"⚠ Feil ved henting av nøkkeltall: {e}")
-        return jsonify({"error": "Kunne ikke hente nøkkeltall fra databasen"}), 500
-
-@app.route("/varer")
-def varer():
-    """Viser varelageret."""
-    try:
-        varer = db.fetch_all("SELECT varenummer, betegnelse, pris, antall FROM vare ORDER BY betegnelse ASC;")
-        return render_template("varer.html", varer=varer)
-    except Exception as e:
-        logging.error(f"⚠ Feil ved henting av varelager: {e}")
-        return jsonify({"error": "Kunne ikke hente varelager"}), 500
-
-@app.route("/kunder")
-def kunder():
-    """Viser kunder via Stored Procedure."""
-    try:
-        kunder = db.call_procedure("hent_alle_kunder")
-        return render_template("kunder.html", kunder=kunder)
-    except Exception as e:
-        logging.error(f"⚠ Feil ved henting av kunder: {e}")
-        return jsonify({"error": "Kunne ikke hente kunder"}), 500
-
-@app.route("/ordrer")
-def ordrer():
-    """Viser alle ordrer."""
-    try:
-        ordrer = db.fetch_all(
-            """
-            SELECT o.ordrenummer, o.ordre_dato, o.dato_sendt, o.betalt_dato, 
-                   CONCAT(k.fornavn, ' ', k.etternavn) AS kundenavn 
-            FROM ordre o 
-            JOIN kunde k ON o.kundenummer = k.knr
-            ORDER BY o.ordre_dato DESC;
-            """
-        )
-        return render_template("ordrer.html", ordrer=ordrer)
-    except Exception as e:
-        logging.error(f"⚠ Feil ved henting av ordrer: {e}")
-        return jsonify({"error": "Kunne ikke hente ordrer"}), 500
-
-if __name__ == "__main__":
-    logging.info(f"🚀 Flask-server starter på http://{config.FLASK_CONFIG['HOST']}:{config.FLASK_CONFIG['PORT']} 🚀")
-    app.run(debug=config.FLASK_CONFIG["DEBUG"], host=config.FLASK_CONFIG["HOST"], port=config.FLASK_CONFIG["PORT"])
-    print(f"🚀 Flask-server starter på http://{config.FLASK_CONFIG['HOST']}:{config.FLASK_CONFIG['PORT']} 🚀")
+if __name__ == '__main__':
+    app.run(debug=False)
