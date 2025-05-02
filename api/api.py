@@ -182,6 +182,42 @@ def get_kunder():
         logging.error(f"Feil ved henting av kunder: {e}")
         return jsonify({"error": "Kunne ikke hente kunder"}), 500
 
+# Legge til en ny kunde
+@api_blueprint.route("/kunder", methods=["POST"])
+def add_kunde():
+    try:
+        data = request.get_json()
+        required_fields = ["fornavn", "etternavn", "adresse", "postnummer"]
+
+        if not data or not all(field in data and data[field] for field in required_fields):
+            return jsonify({"error": "Mangler påkrevde felt"}), 400
+
+        # Valgfri epost
+        epost = data.get("epost", None)
+
+        query = """
+            INSERT INTO kunde (Fornavn, Etternavn, Adresse, PostNr, Epost)
+            VALUES (%s, %s, %s, %s, %s)
+        """
+        params = (
+            data["fornavn"],
+            data["etternavn"],
+            data["adresse"],
+            data["postnummer"],
+            epost
+        )
+
+        success = db.execute_query(query, params)
+
+        if not success:
+            return jsonify({"error": "Klarte ikke å legge til kunde"}), 500
+
+        return jsonify({"message": "Kunde lagt til"}), 201
+
+    except Exception as e:
+        logging.error(f"Feil ved registrering av kunde: {e}")
+        return jsonify({"error": "Serverfeil ved registrering av kunde"}), 500
+
 # --- Ordre-Endepunkter ---
 
 # Hente alle ordrer

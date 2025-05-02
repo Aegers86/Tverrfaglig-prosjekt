@@ -74,43 +74,42 @@ function fetchVarer() {
 // Funksjon: Hent kunder fra API og vis i tabellen
 function fetchKunder() {
     fetch("/api/kunder")
-        .then(response => response.json())
-        .then(data => {
-            // Forbedret feilsjekk
-            if (!response.ok) {
-               throw new Error(`Nettverksrespons var ikke ok: ${response.statusText}`);
-            }
-            if (!Array.isArray(data)) { // Sjekk om data er en liste
-                console.error("Mottok ikke en liste fra /api/kunder:", data);
-                // Håndter feil, f.eks. vis en melding til brukeren
-                const tableBody = document.querySelector("#kunderTable tbody");
-                if (tableBody) tableBody.innerHTML = '<tr><td colspan="5">Kunne ikke laste kundedata.</td></tr>';
-                return;
-            }
-
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Nettverksrespons var ikke ok: ${response.statusText}`);
+        }
+        return response.json(); // <- Returner data hvis OK
+    })
+    .then(data => {
+        if (!Array.isArray(data)) {
+            console.error("Mottok ikke en liste fra /api/kunder:", data);
             const tableBody = document.querySelector("#kunderTable tbody");
-            if (!tableBody) {
-                console.error("Kunne ikke finne table body for kunderTable");
-                return;
-            }
-            tableBody.innerHTML = ""; // Tøm tabellen
+            if (tableBody) tableBody.innerHTML = '<tr><td colspan="5">Kunne ikke laste kundedata.</td></tr>';
+            return;
+        }
 
-            data.forEach(kunde => {
-                // Bruker korrekte feltnavn fra databasen (store/små bokstaver)
-                const knr = kunde.KNr ?? 'N/A';
-                const fornavn = kunde.Fornavn ?? '';
-                const etternavn = kunde.Etternavn ?? '';
-                const adresse = kunde.Adresse ?? '';
-                const postnr = kunde.PostNr ?? '';
-                const row = `<tr><td>${knr}</td><td>${fornavn}</td><td>${etternavn}</td><td>${adresse}</td><td>${postnr}</td></tr>`;
-                tableBody.innerHTML += row; // Bruk appendChild for bedre ytelse hvis mulig, men += fungerer
-            });
-        })
-        .catch(error => {
-            console.error("Feil ved henting av kunder:", error);
-            const tableBody = document.querySelector("#kunderTable tbody");
-            if (tableBody) tableBody.innerHTML = `<tr><td colspan="5">Feil: ${error.message}</td></tr>`;
+        const tableBody = document.querySelector("#kunderTable tbody");
+        if (!tableBody) {
+            console.error("Kunne ikke finne table body for kunderTable");
+            return;
+        }
+        tableBody.innerHTML = ""; // Tøm tabellen
+
+        data.forEach(kunde => {
+            const knr = kunde.KNr ?? 'N/A';
+            const fornavn = kunde.Fornavn ?? '';
+            const etternavn = kunde.Etternavn ?? '';
+            const adresse = kunde.Adresse ?? '';
+            const postnr = kunde.PostNr ?? '';
+            const row = `<tr><td>${knr}</td><td>${fornavn}</td><td>${etternavn}</td><td>${adresse}</td><td>${postnr}</td></tr>`;
+            tableBody.innerHTML += row;
         });
+    })
+    .catch(error => {
+        console.error("Feil ved henting av kunder:", error);
+        const tableBody = document.querySelector("#kunderTable tbody");
+        if (tableBody) tableBody.innerHTML = `<tr><td colspan="5">Feil: ${error.message}</td></tr>`;
+    });
 }
 
 // Funksjon: Hent ordrer fra API og vis i tabellen
