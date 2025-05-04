@@ -4,6 +4,7 @@ from api.api import api_blueprint
 from database.database import Database
 import logging
 import config
+#from database.populate_database import populate_database  # ✅ Importer og kjør
 
 #app.py - Flask-applikasjonen for handel og lagerstyring
 
@@ -25,6 +26,14 @@ logging.basicConfig(
 
 # Opprett databaseforbindelse
 db = Database()
+
+# ✅ Kjør populate_database ved oppstart
+try:
+    logging.info("🔄 Kjører `populate_database.py` for å sikre testdata...")
+    #populate_database()
+    logging.info("✅ Databasen er fylt med testdata!")
+except Exception as e:
+    logging.error(f"⚠ Feil ved kjøring av `populate_database.py`: {e}")
 
 @app.route("/")
 def home():
