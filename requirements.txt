@@ -1,12 +1,8 @@
 mysql-connector-python~=9.2.0
 python-dotenv~=1.0.1
-tk
-requests
-fastapi
-uvicorn
-flask_mysqldb
 reportlab~=4.3.0
-faker~=37.0.0
-
 mysql~=0.0.3
 Flask~=3.1.0
+flask_mysqldb
+
+
