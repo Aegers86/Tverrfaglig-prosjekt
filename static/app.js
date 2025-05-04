@@ -213,34 +213,19 @@ function addVare() {
 
 // Funksjon: Legg til en ny kunde
 function addKunde() {
-    // Antar at API /api/kunder for POST ikke finnes ennå,
-    // eller at den skal implementeres for å håndtere dette.
-    // Denne koden sender data, men API-et må være klart til å motta det.
     const fornavn = document.getElementById("fornavn").value.trim();
     const etternavn = document.getElementById("etternavn").value.trim();
     const adresse = document.getElementById("adresse").value.trim();
-    const postnummer = document.getElementById("postnummer").value.trim(); // Send som string, DB tar CHAR(4)
-    const epostInput = document.getElementById("epost"); // Valgfritt epost-felt?
-    const epost = epostInput ? epostInput.value.trim() : null;
+    const postnummer = document.getElementById("postnummer").value.trim();
 
-    if (!fornavn || !etternavn || !adresse || !postnummer) { // Fjernet epost fra påkrevd her
+    if (!fornavn || !etternavn || !adresse || !postnummer) {
         alert("Ugyldige verdier! Fornavn, Etternavn, Adresse og Postnummer må fylles ut.");
         return;
     }
-    // Valider epost hvis feltet finnes og er fylt ut
-    if (epost && !validateEmail(epost)) {
-         alert("Ugyldig e-postformat!");
-         return;
-    }
 
-    // Merk: Sender feltnavn med små bokstaver til APIet.
-    // API-endpoint for POST /kunder må matche dette eller justeres.
     const kundeData = { fornavn, etternavn, adresse, postnummer };
-    if (epost) {
-        kundeData.epost = epost; // Legg til epost hvis den finnes
-    }
 
-    fetch("/api/kunder", { // Antar at POST /api/kunder finnes og håndterer dette
+    fetch("/api/kunder", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(kundeData),
@@ -253,6 +238,7 @@ function addKunde() {
             const error = (data && data.error) || response.statusText;
             throw new Error(error);
         }
+
         fetchKunder(); // Oppdater kundelisten
         document.getElementById("addCustomerForm").reset(); // Tøm skjemaet
     })
@@ -260,10 +246,4 @@ function addKunde() {
         console.error("Feil ved registrering av kunde:", error);
         alert(`Kunne ikke legge til kunde: ${error.message}`);
     });
-}
-
-// Funksjon: Sjekk om en e-post er gyldig
-function validateEmail(email) {
-    const pattern = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
-    return pattern.test(email);
 }
