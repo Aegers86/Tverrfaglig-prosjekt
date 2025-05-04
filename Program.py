@@ -9,7 +9,7 @@ from pdf_generator import PDFGenerator           #Vi har valgt å prøve oss på
 class GUI:
     def __init__(self):                                                     #Denne kjøres automatisk når du konstruerer/lager et objekt. Denne initialiserer/genererer programmet.  
         self.root = tk.Tk()                                                 #Oppretter hovedvinduet
-        self.root.geometry("800x1000")                                      #Setter størrelsen på vinduet
+        self.root.geometry("800x400")                                      #Setter størrelsen på vinduet
         self.root.title("Tverrfaglig prosjekt")                             #Setter tittelen på vinduet
         #Legger til menylinje
         self.menubar = tk.Menu(self.root)                                   #Oppretter menylinjen

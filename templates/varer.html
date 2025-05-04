@@ -19,20 +19,29 @@
             </tr>
         </thead>
         <tbody>
-            <!-- Data lastes inn med JavaScript -->
-        </tbody>
+            {% if varer %}
+                {% for vare in varer %}
+                <tr>
+                    <td>{{ vare.VNr }}</td>
+                    <td>{{ vare.Betegnelse }}</td>
+                    <td>{{ "%.2f"|format(vare.Pris) }} NOK</td> <td>{{ vare.Antall }}</td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="4">Ingen varer funnet ved sideinnlasting.</td>
+                </tr>
+            {% endif %}
+            </tbody>
     </table>
 
     <h2>Legg til ny vare</h2>
     <form id="addVareForm">
+        <input type="text" id="vnr" placeholder="Varenummer (f.eks. V0001)" required>
         <input type="text" id="betegnelse" placeholder="Betegnelse" required>
-        <input type="number" id="pris" placeholder="Pris" required>
-        <input type="number" id="antall" placeholder="Antall" required>
+        <input type="number" step="0.01" id="pris" placeholder="Pris (f.eks. 199.90)" required> <input type="number" id="antall" placeholder="Antall" required>
         <button type="submit">Legg til</button>
     </form>
 
-    <nav>
-        <a href="{{ url_for('home') }}">Tilbake</a>
-    </nav>
-</body>
+    </body>
 </html>
