@@ -1,4 +1,3 @@
-#from flask import Flask, jsonify, request
 from flask_mysqldb import MySQL
 from flask import Flask, render_template_string
 import os
@@ -35,7 +34,7 @@ HTML_TEMPLATE = """
     <table>
         <thead>
             <tr>
-                <th>VNr</th>
+                <th>Varenummer</th>
                 <th>Betegnelse</th>
                 <th>Antall</th>
                 <th>Pris</th>
