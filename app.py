@@ -55,7 +55,7 @@ HTML_TEMPLATE = """
 </html>
 """
 
-@app.route('/varer')
+@app.route('/')
 def vis_varer_html():
     cur = mysql.connection.cursor()
     cur.execute("SELECT Vnr, Betegnelse, Antall, Pris FROM vare")
