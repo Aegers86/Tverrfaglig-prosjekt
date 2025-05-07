@@ -33,11 +33,11 @@ class GUI:
         # Oppretter en ramme for knappene
         button_frame = tk.Frame(self.root)                                  #Oppretter en ramme for knappene
         button_frame.grid(row=0, column=0, sticky="ns", padx=10, pady=10)   #Setter størrelse og plassering i GUI.
-        button_frame.columnconfigure(0, weight=1)                           #Konfigurerer kolonne 0 i knapperammen
+        button_frame.columnconfigure(0, weight=1)                           #Konfigurerer kolonne 0 i knapperammen, weight=1 betyr at den skal ta opp all tilgjengelig plass i kolonnen
 
         # Oppretter knapper med tilhørende kommandoer
         buttons = {                                                         #Oppretter en dictionary med knapper og tilhørende kommandoer
-            "Vis alle ordre": self.hentAlleOrdrer,
+            "Oppdater ordreliste": self.hentAlleOrdrer,
             "Vis varer på lager": self.hentVarerPåLager,
             "Kunder": self.hentAlleKunder,
             "Avslutt": self.terminate
