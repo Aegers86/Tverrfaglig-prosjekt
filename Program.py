@@ -2,7 +2,7 @@
 import tkinter as tk                             #Her bruker vi tkinter som GUI-rammeverk og importerer det
 from tkinter import messagebox                   #Her importerer vi modulen messagebox som vi senere skal bruke til en popup messagebox for å spørre om brukeren vil avslutte vinduet
 from tkinter import ttk                          #Her importerer vi modulen ttk som vi senere skal bruke til treeview (linjer/result i db spørringer)
-from database.database_program import Database   #Her importerer vi db som vi har laget i mappen "database", fra filen database_program.py. Class (klassen) i filen heter "Database". 
+from database.database_program_staticmethod import Database   #Her importerer vi db som vi har laget i mappen "database", fra filen database_program.py. Class (klassen) i filen heter "Database". 
 from pdf_generator import PDFGenerator           #Vi har valgt å prøve oss på valgfri del og har derfor laget en PDF generator som vi importerer her. 
 
 #CLASS GUI - klasse for å konstruere applikasjon/programmet. 
