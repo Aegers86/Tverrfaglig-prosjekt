@@ -107,8 +107,3 @@ class Database:
             return []                                                   # Returnerer tom liste ved feil
         finally:                                                        # Til slutt lukkes tilkoblingen uansett hva
             self.close()                                                # Tilkoblingen lukkes
-
-
-# Kjør databaseoppsett hvis filen kjøres direkte
-if __name__ == "__main__":
-    db = Database()
