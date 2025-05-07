@@ -31,12 +31,12 @@ class GUI:
         self.root.rowconfigure(0, weight=1)                                 #Konfigurerer rad 0
 
         # Oppretter en ramme for knappene
-        button_frame = tk.Frame(self.root)
-        button_frame.grid(row=0, column=0, sticky="ns", padx=10, pady=10)
-        button_frame.columnconfigure(0, weight=1)
+        button_frame = tk.Frame(self.root)                                  #Oppretter en ramme for knappene
+        button_frame.grid(row=0, column=0, sticky="ns", padx=10, pady=10)   #Setter størrelse og plassering i GUI.
+        button_frame.columnconfigure(0, weight=1)                           #Konfigurerer kolonne 0 i knapperammen
 
         # Oppretter knapper med tilhørende kommandoer
-        buttons = {
+        buttons = {                                                         #Oppretter en dictionary med knapper og tilhørende kommandoer
             "Vis alle ordre": self.hentAlleOrdrer,
             "Vis varer på lager": self.hentVarerPåLager,
             "Kunder": self.hentAlleKunder,
@@ -48,11 +48,11 @@ class GUI:
 
         # Treeview opprettelse for å vise resultat fra SQL spørringer
         self.tree = ttk.Treeview(self.root, show="headings")                                        #Oppretter tre for å vise data
-        self.tree.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")                           #Setter størrelse og plassering i GUI. North, South, East, West (nsew)
-        self.vsb = ttk.Scrollbar(self.root, orient="vertical", command=self.tree.yview)            #Vertical scrollbar (vsb)
-        self.vsb.grid(row=0, column=2, sticky="ns", padx=(0, 10))                                  #Plassering i grid
-        self.tree.configure(yscrollcommand=self.vsb.set)                                           #Knytter vertical scrollbar til treeview 
-        self.tree.bind("<Double-1>", self.påTreKlikk)                                              #Binder dobbeltklikk til funksjonen påTreKlikk
+        self.tree.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")                            #Setter størrelse og plassering i GUI. North, South, East, West (nsew)
+        self.vsb = ttk.Scrollbar(self.root, orient="vertical", command=self.tree.yview)             #Vertical scrollbar (vsb)
+        self.vsb.grid(row=0, column=2, sticky="ns", padx=(0, 10))                                   #Plassering i grid
+        self.tree.configure(yscrollcommand=self.vsb.set)                                            #Knytter vertical scrollbar til treeview 
+        self.tree.bind("<Double-1>", self.påTreKlikk)                                               #Binder dobbeltklikk til funksjonen påTreKlikk
 
         self.db = Database()                                                                        #Initialiserer databaseobjektet
 
