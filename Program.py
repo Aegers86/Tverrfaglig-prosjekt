@@ -157,14 +157,14 @@ class GUI:
         details_tree.configure(yscrollcommand=details_vsb.set)                                      #Kobler sammen treet og scrollbaren
 
         # Henter data for ordre detaljer
-        details_tree["columns"] = ("Varenummer", "Enhetspris", "Antall", "Sum")                     #Setter inn kolonner
+        details_tree["columns"] = ("Varenummer", "Beskrivelse", "Enhetspris", "Antall", "Sum")                     #Setter inn kolonner
         for col in details_tree["columns"]:                                                         #for loop som den kjører gjennom
             details_tree.heading(col, text=col)                                                     #Setter overskrift
             details_tree.column(col, width=100, anchor="center")                                    #Forteller at kolonnen skal være 100px bred og midtstilt
         
-        data = self.db.fetch_all("SELECT VNr, PrisPrEnhet, Antall, PrisPrEnhet*Antall as Sum FROM ordrelinje WHERE OrdreNr = %s;", (ordreNr,))        #Henter fra ordrenummer variabelen ordrenummer og er beskyttet mot SQL injeksjon
-        for i in data:                                                                                                                                #Henter dataene som ligger i data
-            details_tree.insert("", "end", values=i)                                                                                                  #Legger til verdiene som er hentet fra databasen
+        data = self.db.fetch_all("SELECT ordrelinje.VNr, vare.Betegnelse, ordrelinje.PrisPrEnhet, ordrelinje.Antall, ordrelinje.PrisPrEnhet * ordrelinje.Antall as Sum FROM ordrelinje INNER JOIN vare ON ordrelinje.VNr = vare.VNr WHERE ordrelinje.OrdreNr = %s;", (ordreNr,))  # Henter fra ordrenummer variabelen ordrenummer og er beskyttet mot SQL injeksjon
+        for i in data:                                                                                                                                                                                                                                                # Henter dataene som ligger i data
+            details_tree.insert("", "end", values=i)                                                                                                                                                                                                                  # Legger til verdiene som er hentet fra databasen
  
         #Legge til label for totalsum
         Totalsum = 0                                                                                #Variabel som lages for å ha en plass å lagre informasjon i forloopen
