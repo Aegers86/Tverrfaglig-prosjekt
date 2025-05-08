@@ -52,8 +52,8 @@ class Database:
             """
             cursor.execute(create_table_query)
             self.db.commit()
-        except mysql.connector.Error as err:
-            print(f"Error: {err}")
+        except mysql.connector.Error as e:
+            print(f"Error: {e}")
         finally:
             if cursor:
                 cursor.close()
@@ -70,8 +70,8 @@ class Database:
             """
             cursor.execute(create_table_query)
             self.db.commit()
-        except mysql.connector.Error as err:
-            print(f"Error: {err}")
+        except mysql.connector.Error as e:
+            print(f"Error: {e}")
         finally:
             if cursor:
                 cursor.close()
