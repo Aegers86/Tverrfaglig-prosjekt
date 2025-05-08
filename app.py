@@ -55,12 +55,16 @@ HTML_TEMPLATE = """
 
 @app.route("/")                                                                                                         #Angir hjemmesiden sin path i dette tilfellet eksempelvis 127.0.0.1:5000/
 def varerlager_html():                                                                                                  #Funksjon som angir websiden.
-    cur = mysql.connection.cursor()                                                                                     #Benyttes for å sende forespørsel til databasen for å kjøre en SQL forespørsel.
-    cur.execute("SELECT Vnr, Betegnelse, Antall, Pris FROM vare")                                                       #Benyttes for å hente data fra tabellen vare i databasen
-    varelager_data = cur.fetchall()                                                                                     #Lager dataforespørselen fra databasen som en tuple liste.
-    cur.close()                                                                                                         #Lukker databaseforbindelsen
-    varer = [{"Vnr": row[0], "Betegnelse": row[1], "Antall": row[2], "Pris": float(row[3])}for row in varelager_data]   #Benyttes for å konvertere dataene til en dictionary.
-    return render_template_string(HTML_TEMPLATE, varer=varer)                                                           #Flask funksjon for å lage HTML siden og returnere den til klienten.
+    cursor = mysql.connection.cursor()                                                                                     #Benyttes for å sende forespørsel til databasen for å kjøre en SQL forespørsel.
+    try:
+        cursor.execute("SELECT Vnr, Betegnelse, Antall, Pris FROM vare")                                                       #Benyttes for å hente data fra tabellen vare i databasen
+        varelager_data = cursor.fetchall()                                                                                     #Lager dataforespørselen fra databasen som en tuple liste.
+        cursor.close()                                                                                                         #Lukker databaseforbindelsen
+        varer = [{"Vnr": row[0], "Betegnelse": row[1], "Antall": row[2], "Pris": float(row[3])}for row in varelager_data]   #Benyttes for å konvertere dataene til en dictionary.
+        return render_template_string(HTML_TEMPLATE, varer=varer)                                                           #Flask funksjon for å lage HTML siden og returnere den til klienten.
+    except Exception as e:                                                                                                 #Håndterer eventuelle feil som kan oppstå under forespørselen til databasen.
+        cursor.close()                                                                                                         #Lukker databaseforbindelsen
+        return f"En feil oppstod: {e}"                                                                                     #Returnerer feilmeldingen til klienten.
 
 if __name__ == "__main__":                                                                                              #Kjører koden når man starter applikasjonen.
-    app.run(debug=False)                                                                                                #Kjører applikasjonen, debug er satt til False da dette er i produksjon.
+    app.run(debug=False)                                                                                                #Kjører applikasjonen, debug er satt til False da dette er i produksjon. Trenger ikke try/except da run funksjonen har det innebygd.
