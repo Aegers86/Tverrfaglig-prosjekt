@@ -82,7 +82,7 @@ class Database:
         INSERT INTO faktura (OrdreNr, KNr)
         VALUES (%s, %s)
         """
-        cursor.execute(insert_query, (ordreNr, kNr))#Kjører spørringen med parametere
+        cursor.execute(insert_query, (ordreNr, kNr))#Kjører spørringen med parametere, bruker %s for å unngå SQL-injeksjon
         self.db.commit()                            #Bekrefter endringer i databasen
         faktura_id = cursor.lastrowid               #Henter ID-en til den sist innlagte fakturaen
         cursor.close()                              #Lukker cursoren
@@ -101,7 +101,7 @@ class Database:
         insert_query = """
         INSERT INTO kunde (KNr, Fornavn, Etternavn, Adresse, Postnr) VALUES (%s, %s, %s, %s, %s)
         """
-        cursor.execute(insert_query, (kNr, Fornavn, Etternavn, Adresse, Postnr))    #Kjører spørringen med parametere
+        cursor.execute(insert_query, (kNr, Fornavn, Etternavn, Adresse, Postnr))    #Kjører spørringen med parametere, bruker %s for å unngå SQL-injeksjon
         #print(f"Inserted Kunde with kNr: {kNr}")                                   #Debugging utskrift for å vise hvilken kNr som ble satt inn
         self.db.commit()                                                            #Bekrefter endringer i databasen
         cursor.close()                                                              #Lukker cursoren

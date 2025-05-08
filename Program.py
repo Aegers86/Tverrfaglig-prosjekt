@@ -25,36 +25,39 @@ class GUI:
         self.menubar.add_cascade(label="Hjelp", menu=self.hjelpmeny)        #Legger til hjelpen i menylinjen
         self.hjelpmeny.add_command(label="Om", command=self.omVindu)        #Legger til kommandoen "Om" i undermenyen
 
-        self.root.columnconfigure(0, weight=1)                              #Konfigurerer kolonne 0
+        self.root.columnconfigure(0, weight=0)                              #Konfigurerer kolonne 0
         self.root.columnconfigure(1, weight=1)                              #Konfigurerer kolonne 1
-        self.root.columnconfigure(2, weight=1)                              #Konfigurerer kolonne 2
-        self.root.columnconfigure(3, weight=1)                              #Konfigurerer kolonne 3
-        self.root.columnconfigure(4, weight=0)                              #Konfigurerer kolonne 4
         
-        self.root.rowconfigure(1, weight=1)                                 #Konfigurerer rad 1
+        self.root.rowconfigure(0, weight=1)                                 #Konfigurerer rad 0
 
-        #Oppretter knapper med tilhørende kommandoer
-        buttons = {
+        # Oppretter en ramme for knappene
+        button_frame = tk.Frame(self.root)                                  #Oppretter en ramme for knappene
+        button_frame.grid(row=0, column=0, sticky="ns", padx=10, pady=10)   #Setter størrelse og plassering i GUI.
+        button_frame.columnconfigure(0, weight=1)                           #Konfigurerer kolonne 0 i knapperammen, weight=1 betyr at den skal ta opp all tilgjengelig plass i kolonnen
+
+        # Oppretter knapper med tilhørende kommandoer
+        buttons = {                                                         #Oppretter en dictionary med knapper og tilhørende kommandoer
+            "Oppdater ordreliste": self.hentAlleOrdrer,
             "Vis varer på lager": self.hentVarerPåLager,
-            "Vis alle ordre": self.hentAlleOrdrer,
             "Kunder": self.hentAlleKunder,
             "Avslutt": self.terminate
         }
-        for i, (text, command) in enumerate(buttons.items()):                                       #For loop for å generere knappene på en enkel måte (Øyvind ville bare teste dette)
-            button = tk.Button(master=self.root, text=text, font=("Arial", 14), command=command)    #Lager knapp ut ifra satte krav (i dictonary Buttons)
-            button.grid(row=0, column=i, sticky="ew")                                               #Plasserer knappene i grid. Vi valgte å bruke grid som metode for å strukturere GUI. 
+        for i, (text, command) in enumerate(buttons.items()):                                       #For loop for å generere knappene på en enkel måte
+            button = tk.Button(master=button_frame, text=text, font=("Arial", 14), command=command) #Lager knapp ut ifra satte krav (i dictonary Buttons)
+            button.grid(row=i, column=0, sticky="ew", pady=5)                                       #Plasserer knappene i grid
 
-        #Treeview opprettelse for å vise resultat fra SQL spørringer
+        # Treeview opprettelse for å vise resultat fra SQL spørringer
         self.tree = ttk.Treeview(self.root, show="headings")                                        #Oppretter tre for å vise data
-        self.tree.grid(row=1, column=0, columnspan=5, padx=10, pady=10, sticky="nsew")              #Setter størrelse og plassering i GUI. North, South, East, West (nsew)
+        self.tree.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")                            #Setter størrelse og plassering i GUI. North, South, East, West (nsew)
         self.vsb = ttk.Scrollbar(self.root, orient="vertical", command=self.tree.yview)             #Vertical scrollbar (vsb)
-        self.vsb.grid(row=1, column=5, sticky="ns", padx=(0, 10))                                   #Plassering i grid
+        self.vsb.grid(row=0, column=2, sticky="ns", padx=(0, 10))                                   #Plassering i grid
         self.tree.configure(yscrollcommand=self.vsb.set)                                            #Knytter vertical scrollbar til treeview 
         self.tree.bind("<Double-1>", self.påTreKlikk)                                               #Binder dobbeltklikk til funksjonen påTreKlikk
 
         self.db = Database()                                                                        #Initialiserer databaseobjektet
 
         self.root.protocol("WM_DELETE_WINDOW", self.terminate)                                      #Håndterer lukking av vinduet
+        self.hentAlleOrdrer()
         self.root.mainloop()                                                                        #Starter hovedløkken
    
     #Dette er en dekoratør, den brukes for å legge til feilhåndtering uten å endre den opprinnelige funksjonen direkte. Vi benytter en wrapper som tar imot alle argumentene som sendes til den opprinnelige funksjonen og prøver å kjøre funksjonen med argumentene. Hvis det oppstår en feil vil wrapperen fange feilen og printe beskjed til terminalen da det er det vi sagt den skal gjøre dersom det oppstår en feil. 
@@ -256,7 +259,8 @@ class GUI:
         self.kundenummer_box = tk.Entry(self.kunde_window)                                                            #Lager entryboks for kundenummer
         self.kundenummer_box.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")                                   #Pakker og plasserer labelen i vinduet   
         self.kundenummer_box.insert(0,self.kunde_tree.item(selected_item[0], "values")[0])                            #Pakker det hele sammen. Vi velger også å vise kundedataene til venstre i visningsvinduet
-        
+        self.kundenummer_box.config(state="readonly")                                                                 #Setter kundenummer til readonly, slik at den ikke kan endres av bruker.
+
         self.labelFornavn = tk.Label(self.kunde_window, text="Fornavn: ")
         self.labelFornavn.grid(row=1, column=0, padx=10, pady=10, sticky="e")                                         #Setter størrelse på popupvinduet
         self.fornavn_box = tk.Entry(self.kunde_window)                                                                #Lager entryboks for fornavn
