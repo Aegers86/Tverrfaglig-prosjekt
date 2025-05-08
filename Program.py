@@ -259,7 +259,8 @@ class GUI:
         self.kundenummer_box = tk.Entry(self.kunde_window)                                                            #Lager entryboks for kundenummer
         self.kundenummer_box.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")                                   #Pakker og plasserer labelen i vinduet   
         self.kundenummer_box.insert(0,self.kunde_tree.item(selected_item[0], "values")[0])                            #Pakker det hele sammen. Vi velger også å vise kundedataene til venstre i visningsvinduet
-        
+        self.kundenummer_box.config(state="readonly")                                                                 #Setter kundenummer til readonly, slik at den ikke kan endres av bruker.
+
         self.labelFornavn = tk.Label(self.kunde_window, text="Fornavn: ")
         self.labelFornavn.grid(row=1, column=0, padx=10, pady=10, sticky="e")                                         #Setter størrelse på popupvinduet
         self.fornavn_box = tk.Entry(self.kunde_window)                                                                #Lager entryboks for fornavn
