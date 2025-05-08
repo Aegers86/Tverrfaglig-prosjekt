@@ -1,4 +1,4 @@
-# database/database.py
+# database/database_try_except.py
 # Databasehåndtering med MySQL
 # ----------------------------------------------
 # Denne klassen håndterer tilkobling til MySQL-databasen,
@@ -51,10 +51,10 @@ class Database:
         if not self.db:                                                 # Sjekker om tilkoblingen er vellykket
             return []                                                   # Returnerer tom liste hvis ikke
         try:
-            with self.db.cursor(dictionary=True) as cursor:             # Bruker dictionary for å hente resultater som dictionary
+            with self.db.cursor() as cursor:                            # Bruker dictionary for å hente resultater som dictionary
                 cursor.execute(query, params)                           # Kjør spørringen med parametere
-                results = cursor.fetchall()                             # Henter alle rader fra resultatene
-                return results                                          # Returnerer riktig struktur
+                data = cursor.fetchall()                                # Henter alle rader fra resultatene
+                return data                                             # Returnerer riktig struktur
         except mysql.connector.Error as err:                            # Håndterer eventuelle feil
             return []                                                   # Returnerer tom liste ved feil
         finally:                                                        # Lukker tilkoblingen uansett hva
@@ -66,10 +66,10 @@ class Database:
         if not self.db:                                                 # Sjekker om tilkoblingen er vellykket
             return None                                                 # Returnerer None hvis ikke
         try:                                                            # Prøver å kjøre spørringen
-            with self.db.cursor(dictionary=True) as cursor:             # Bruker cursor() for å hente resultater som dictionary
+            with self.db.cursor() as cursor:                            # Bruker cursor() for å hente resultater som dictionary
                 cursor.execute(query, params)                           # Kjør spørringen med parametere
-                result = cursor.fetchone()                              # Henter en enkelt rad fra resultatene
-                return result                                           # Returnerer resultatet
+                data = cursor.fetchone()                                # Henter en enkelt rad fra resultatene
+                return data                                             # Returnerer resultatet
         except mysql.connector.Error as err:                            # Håndterer eventuelle feil
             return None                                                 # Returnerer None ved feil
         finally:                                                        # Lukker tilkoblingen uansett hva
@@ -97,7 +97,7 @@ class Database:
         if not self.db:                                                 # Sjekker om tilkoblingen er vellykket
             return []                                                   # Returnerer tom liste hvis ikke
         try:                                                            # Prøver å kjøre lagret prosedyre
-            with self.db.cursor(dictionary=True) as cursor:             # Bruker cursor() for å hente resultater som dictionary
+            with self.db.cursor() as cursor:                            # Bruker cursor() for å hente resultater som dictionary
                 cursor.callproc(procedure, args)                        # Kaller den lagrede prosedyren med argumenter
                 results = []                                            # Tom liste for å lagre resultatene
                 for result in cursor.stored_results():                  # Går gjennom alle lagrede resultater
