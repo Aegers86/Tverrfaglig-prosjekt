@@ -7,7 +7,6 @@
 import mysql.connector
 from dotenv import load_dotenv
 import os
-from logs.logs import log_info, log_error
 
 # Last inn miljøvariabler fra .env
 load_dotenv()
@@ -38,30 +37,25 @@ class Database:
                 database=DB_NAME,                                       # Navn på databasen
                 port=DB_PORT                                            # Port for databasen
             )
-            log_info("Tilkobling til databasen vellykket.")             # Logger at tilkoblingen er vellykket
         except mysql.connector.Error as err:                            # Håndterer eventuelle feil ved tilkobling
-            log_error(f"⚠ Database Connection Error: {err}")            # Logger feilen
             self.db = None                                              # Setter db til None hvis tilkoblingen feiler
 
     # Lukker tilkoblingen til databasen
     def close(self):                                                    # Lukker tilkoblingen til databasen
         if self.db:                                                     # Sjekker om tilkoblingen eksisterer
             self.db.close()                                             # Lukker tilkoblingen
-            log_info("🔌 Databaseforbindelse lukket.")                  # Logger at tilkoblingen er lukket
 
     # Henter alle rader fra spørring
     def fetch_all(self, query, params=()):                              # Henter alle rader fra spørring
         self.connect()                                                  # Kobler til databasen
         if not self.db:                                                 # Sjekker om tilkoblingen er vellykket
             return []                                                   # Returnerer tom liste hvis ikke
-
         try:
             with self.db.cursor(dictionary=True) as cursor:             # Bruker dictionary for å hente resultater som dictionary
                 cursor.execute(query, params)                           # Kjør spørringen med parametere
                 results = cursor.fetchall()                             # Henter alle rader fra resultatene
                 return results                                          # Returnerer riktig struktur
         except mysql.connector.Error as err:                            # Håndterer eventuelle feil
-            log_error(f"⚠ Database Query Error (fetch_all): {err}")     # Logger feilen
             return []                                                   # Returnerer tom liste ved feil
         finally:                                                        # Lukker tilkoblingen uansett hva
             self.close()                                                # Tilkoblingen lukkes
@@ -71,14 +65,12 @@ class Database:
         self.connect()                                                  # Kobler til databasen
         if not self.db:                                                 # Sjekker om tilkoblingen er vellykket
             return None                                                 # Returnerer None hvis ikke
-
         try:                                                            # Prøver å kjøre spørringen
             with self.db.cursor(dictionary=True) as cursor:             # Bruker cursor() for å hente resultater som dictionary
                 cursor.execute(query, params)                           # Kjør spørringen med parametere
                 result = cursor.fetchone()                              # Henter en enkelt rad fra resultatene
                 return result                                           # Returnerer resultatet
         except mysql.connector.Error as err:                            # Håndterer eventuelle feil
-            log_error(f"⚠ Database Query Error (fetch_one): {err}")     # Logger feilen
             return None                                                 # Returnerer None ved feil
         finally:                                                        # Lukker tilkoblingen uansett hva
             self.close()                                                # Tilkoblingen lukkes
@@ -88,14 +80,12 @@ class Database:
         self.connect()                                                  # Kobler til databasen
         if not self.db:                                                 # Sjekker om tilkoblingen er vellykket
             return False                                                # Returnerer False hvis ikke
-
         try:                                                            # Prøver å kjøre spørringen
             with self.db.cursor() as cursor:                            # Bruker cursor() for ikke-dictionary resultater
                 cursor.execute(query, params)                           # Kjør spørringen med parametere
                 self.db.commit()                                        # Bekreft endringer i databasen
                 return True
         except mysql.connector.Error as err:                            # Håndterer eventuelle feil
-            log_error(f"⚠ Database Query Error (execute_query): {err}") # Logger feilen
             self.db.rollback()                                          # Tilbakestill transaksjonen
             return False                                                # Returnerer False ved feil
         finally:                                                        # Lukker tilkoblingen uansett hva
@@ -106,7 +96,6 @@ class Database:
         self.connect()                                                  # Kobler til databasen
         if not self.db:                                                 # Sjekker om tilkoblingen er vellykket
             return []                                                   # Returnerer tom liste hvis ikke
-
         try:                                                            # Prøver å kjøre lagret prosedyre
             with self.db.cursor(dictionary=True) as cursor:             # Bruker cursor() for å hente resultater som dictionary
                 cursor.callproc(procedure, args)                        # Kaller den lagrede prosedyren med argumenter
@@ -115,12 +104,6 @@ class Database:
                     results.extend(result.fetchall())                   # Legger til resultatene i listen
                 return results                                          # Returnerer resultatene
         except mysql.connector.Error as err:                            # Håndterer eventuelle feil
-            log_error(f"⚠ Stored Procedure Error: {err}")               # Logger feilen
             return []                                                   # Returnerer tom liste ved feil
         finally:                                                        # Til slutt lukkes tilkoblingen uansett hva
             self.close()                                                # Tilkoblingen lukkes
-
-
-# Kjør databaseoppsett hvis filen kjøres direkte
-if __name__ == "__main__":
-    db = Database()

@@ -2,7 +2,7 @@
 import tkinter as tk                             #Her bruker vi tkinter som GUI-rammeverk og importerer det
 from tkinter import messagebox                   #Her importerer vi modulen messagebox som vi senere skal bruke til en popup messagebox for å spørre om brukeren vil avslutte vinduet
 from tkinter import ttk                          #Her importerer vi modulen ttk som vi senere skal bruke til treeview (linjer/result i db spørringer)
-from database.database_program import Database   #Her importerer vi db som vi har laget i mappen "database", fra filen database_program.py. Class (klassen) i filen heter "Database". 
+from database.database_program_staticmethod import Database   #Her importerer vi db som vi har laget i mappen "database", fra filen database_program.py. Class (klassen) i filen heter "Database". 
 from pdf_generator import PDFGenerator           #Vi har valgt å prøve oss på valgfri del og har derfor laget en PDF generator som vi importerer her. 
 
 #CLASS GUI - klasse for å konstruere applikasjon/programmet. 
@@ -157,14 +157,14 @@ class GUI:
         details_tree.configure(yscrollcommand=details_vsb.set)                                      #Kobler sammen treet og scrollbaren
 
         # Henter data for ordre detaljer
-        details_tree["columns"] = ("Varenummer", "Enhetspris", "Antall", "Sum")                     #Setter inn kolonner
+        details_tree["columns"] = ("Varenummer", "Beskrivelse", "Enhetspris", "Antall", "Sum")                     #Setter inn kolonner
         for col in details_tree["columns"]:                                                         #for loop som den kjører gjennom
             details_tree.heading(col, text=col)                                                     #Setter overskrift
             details_tree.column(col, width=100, anchor="center")                                    #Forteller at kolonnen skal være 100px bred og midtstilt
         
-        data = self.db.fetch_all("SELECT VNr, PrisPrEnhet, Antall, PrisPrEnhet*Antall as Sum FROM ordrelinje WHERE OrdreNr = %s;", (ordreNr,))        #Henter fra ordrenummer variabelen ordrenummer og er beskyttet mot SQL injeksjon
-        for i in data:                                                                                                                                #Henter dataene som ligger i data
-            details_tree.insert("", "end", values=i)                                                                                                  #Legger til verdiene som er hentet fra databasen
+        data = self.db.fetch_all("SELECT ordrelinje.VNr, vare.Betegnelse, ordrelinje.PrisPrEnhet, ordrelinje.Antall, ordrelinje.PrisPrEnhet * ordrelinje.Antall as Sum FROM ordrelinje INNER JOIN vare ON ordrelinje.VNr = vare.VNr WHERE ordrelinje.OrdreNr = %s;", (ordreNr,))  # Henter fra ordrenummer variabelen ordrenummer og er beskyttet mot SQL injeksjon
+        for i in data:                                                                                                                                                                                                                                                # Henter dataene som ligger i data
+            details_tree.insert("", "end", values=i)                                                                                                                                                                                                                  # Legger til verdiene som er hentet fra databasen
  
         #Legge til label for totalsum
         Totalsum = 0                                                                                #Variabel som lages for å ha en plass å lagre informasjon i forloopen
@@ -288,24 +288,26 @@ class GUI:
         self.lagreKunde.grid(row=6, column=1, padx=10, pady=10, sticky="nsew")                                         #Pakker det hele sammen. Vi velger også å vise kundedataene til venstre i visningsvinduet
 
     @sikkerhetsSjekk    
-    def oppdaterKundeiDb(self):  #Lager knapp som heter "Lagre kunde" og kjører funksjonen insert_kunde() i db.py
-        self.db.update_one("UPDATE kunde SET Fornavn = %s, Etternavn = %s, Adresse = %s, PostNr = %s WHERE KNr = %s;", (self.fornavn_box.get(), self.etternavn_box.get(), self.addresse_box.get(), self.postnr_box.get(), self.kundenummer_box.get()))  #Lager entryboks for fornavn
-        #print(f"UPDATE kunde SET Fornavn = {self.fornavn_box.get()}, Etternavn = {self.etternavn_box.get()}, Adresse = {self.addresse_box.get()}, PostNr = {self.postnr_box.get()} WHERE KNr = {self.kundenummer_box.get()};")  #Lager entryboks for fornavn
-
-        self.kunde_tree.delete(*self.kunde_tree.get_children())                                                        #Tømmer kunde_tree før oppdatering
-        # Henter kunder
-        self.kunde_tree["columns"] = ("Kundenummer", "Fornavn", "Etternavn", "Adresse", "Post Nummer")                 #Setter inn kolonner
-        for col in self.kunde_tree["columns"]:                                                                         #for loop som den kjører gjennom
-            self.kunde_tree.heading(col, text=col)                                                                     #Setter overskrift
-            self.kunde_tree.column(col, width=100, anchor="center")                                                    #Forteller at kolonnen skal være 100px bred og midtstilt
-        
-        data = self.db.call_procedure("hent_alle_kunder")                                                              #Henter data fra databasen med følgende store procedures: "SELECT * FROM varehusdb.kunde;"
-        for i in data:                                                                                                 #Henter dataene som ligger i variablen data
-            self.kunde_tree.insert("", "end", values=i)  
-        
-        #slette kunde
-        self.slettKunde(self)
-        self.kunde_window.destroy()                                                                                    #Lukker vinduet etter oppdatering
+    def oppdaterKundeiDb(self):                                                                                                             #Funksjon for å oppdatere kunde i databasen
+        if self.fornavn_box.get() == "" or self.etternavn_box.get() == "" or self.addresse_box.get() == "" or self.postnr_box.get() == "":  #Sjekker om noen av feltene er tomme
+            messagebox.showwarning("Ingen valgt", "Vennligst fyll ut alle feltene.")                                                        #Oppretter varsel dersom noen av feltene er tomme
+            return                                                                                                                          #Avslutter funksjonen
+        elif any(char.isdigit() for char in self.fornavn_box.get()) or any(char.isdigit() for char in self.etternavn_box.get()):            #Sjekker om noen av feltene inneholder tall
+            messagebox.showwarning("Feil","Ikke lov å bruke tall i Fornavn eller Etternavn, vennligst prøv igjen.")                         #Oppretter varsel dersom noen av feltene inneholder tall
+            return                                                                                                                          #Avslutter funksjonen 
+        else:
+            self.db.update_one("UPDATE kunde SET Fornavn = %s, Etternavn = %s, Adresse = %s, PostNr = %s WHERE KNr = %s;", (self.fornavn_box.get(), self.etternavn_box.get(), self.addresse_box.get(), self.postnr_box.get(), self.kundenummer_box.get()))  #Lager entryboks for fornavn
+            self.kunde_tree.delete(*self.kunde_tree.get_children())                                                                         #Tømmer kunde_tree før oppdatering
+            # Henter kunder
+            self.kunde_tree["columns"] = ("Kundenummer", "Fornavn", "Etternavn", "Adresse", "Post Nummer")                                  #Setter inn kolonner
+            for col in self.kunde_tree["columns"]:                                                                                          #for loop som den kjører gjennom
+                self.kunde_tree.heading(col, text=col)                                                                                      #Setter overskrift
+                self.kunde_tree.column(col, width=100, anchor="center")                                                                     #Forteller at kolonnen skal være 100px bred og midtstilt
+            
+            data = self.db.call_procedure("hent_alle_kunder")                                                                               #Henter data fra databasen med følgende store procedures: "SELECT * FROM varehusdb.kunde;"
+            for i in data:                                                                                                                  #Henter dataene som ligger i variablen data
+                self.kunde_tree.insert("", "end", values=i)                                                                                 #Setter inn data i treet
+            self.kunde_window.destroy()                                                                                                     #Lukker vinduet etter oppdatering
 
     def opprettKunde(self):                                                                                            #Funksjon for å se kundedb med stored procedures
         #Lager nytt vindu for ordre detaljer
@@ -347,18 +349,26 @@ class GUI:
 
     @sikkerhetsSjekk                                                                        
     def lagreKundeiDb(self):  
-        self.db.insert_kunde(self.fornavn_box.get(), self.etternavn_box.get(), self.addresse_box.get(), self.postnr_box.get())  #Lager entryboks for fornavn
-        self.kunde_window.destroy()                                                         
-        self.kunde_tree.delete(*self.kunde_tree.get_children())                                                         #Tømmer kunde_tree før oppdatering
-        # Henter kunder
-        self.kunde_tree["columns"] = ("Kundenummer", "Fornavn", "Etternavn", "Adresse", "Post Nummer")                  #Setter inn kolonner
-        for col in self.kunde_tree["columns"]:                                                                          #for loop som den kjører gjennom
-            self.kunde_tree.heading(col, text=col)                                                                      #Setter overskrift
-            self.kunde_tree.column(col, width=100, anchor="center")                                                     #Forteller at kolonnen skal være 100px bred og midtstilt
-        
-        data = self.db.call_procedure("hent_alle_kunder")                                                               #Henter data fra databasen med følgende store procedures: "SELECT * FROM varehusdb.kunde;"
-        for i in data:                                                                                                  #Henter dataene som ligger i variablen data
-            self.kunde_tree.insert("", "end", values=i) 
+        if self.fornavn_box.get() == "" or self.etternavn_box.get() == "" or self.addresse_box.get() == "" or self.postnr_box.get() == "":  #Sjekker om noen av feltene er tomme
+            messagebox.showwarning("Ingen valgt", "Vennligst fyll ut alle feltene.")                                                        #Oppretter varsel dersom noen av feltene er tomme
+            return                                                                                                                          #Avslutter funksjonen
+        elif any(char.isdigit() for char in self.fornavn_box.get()) or any(char.isdigit() for char in self.etternavn_box.get()):            #Sjekker om noen av feltene inneholder tall
+            messagebox.showwarning("Feil","Ikke lov å bruke tall i Fornavn eller Etternavn, vennligst prøv igjen.")                         #Oppretter varsel dersom noen av feltene inneholder tall
+            return                                                                                                                          #Avslutter funksjonen 
+        else:
+            self.db.insert_kunde(self.fornavn_box.get(), self.etternavn_box.get(), self.addresse_box.get(), self.postnr_box.get())          #Lager informasjonen fra entryboksene i databasen med funksjonen insert_kunde() i db.py
+            self.kunde_window.destroy()                                                                                                     #Lukker vinduet etter oppdatering
+            self.kunde_tree.delete(*self.kunde_tree.get_children())                                                                         #Tømmer kunde_tree før oppdatering
+            # Henter kunder
+            self.kunde_tree["columns"] = ("Kundenummer", "Fornavn", "Etternavn", "Adresse", "Post Nummer")                                  #Setter inn kolonner
+            for col in self.kunde_tree["columns"]:                                                                                          #for loop som den kjører gjennom
+                self.kunde_tree.heading(col, text=col)                                                                                      #Setter overskrift
+                self.kunde_tree.column(col, width=100, anchor="center")                                                                     #Forteller at kolonnen skal være 100px bred og midtstilt
+
+            data = self.db.call_procedure("hent_alle_kunder")                                                                               #Henter data fra databasen med følgende store procedures: "SELECT * FROM varehusdb.kunde;"
+            for i in data:                                                                                                                  #Henter dataene som ligger i variablen data
+                self.kunde_tree.insert("", "end", values=i)                                                                                 #Setter inn data i treet
+
 
     @sikkerhetsSjekk
     def slettKunde(self):                                                                                               #Funksjon for å se kundedb med stored procedures
