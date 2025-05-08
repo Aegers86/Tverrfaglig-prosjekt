@@ -24,7 +24,7 @@ HTML_TEMPLATE = """
         table {border-collapse: collapse; width: 90%; margin: 20px auto;}                                               
         th, td {border: 1px solid #888; padding: 10px 14px; text-align: left;}
         th {background-color: #33ffdd;}
-        h1 {text-align: center; font-family: calibri;}
+        h1 {text-align: center; font-family: calibri;} 
      </style>
 </head>
 <body>
@@ -57,7 +57,7 @@ HTML_TEMPLATE = """
 def varerlager_html():                                                                                                  #Funksjon som angir websiden.
     cur = mysql.connection.cursor()                                                                                     #Benyttes for å sende forespørsel til databasen for å kjøre en SQL forespørsel.
     cur.execute("SELECT Vnr, Betegnelse, Antall, Pris FROM vare")                                                       #Benyttes for å hente data fra tabellen vare i databasen
-    varelager_data = cur.fetchall()                                                                                     #Lager dataforespørselen fra databasen som en tuples liste.
+    varelager_data = cur.fetchall()                                                                                     #Lager dataforespørselen fra databasen som en tuple liste.
     cur.close()                                                                                                         #Lukker databaseforbindelsen
     varer = [{"Vnr": row[0], "Betegnelse": row[1], "Antall": row[2], "Pris": float(row[3])}for row in varelager_data]   #Benyttes for å konvertere dataene til en dictionary.
     return render_template_string(HTML_TEMPLATE, varer=varer)                                                           #Flask funksjon for å lage HTML siden og returnere den til klienten.
