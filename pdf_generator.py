@@ -67,8 +67,11 @@ class PDFGenerator:                                                             
 
 
         #generer PDF
-        doc.build(elements, onFirstPage=add_footer, onLaterPages=add_footer)                                   #lager fil ut ifra elementer
-        os.startfile(pdf_filename)                                                                             #åpner filen som er laget
+        try:    
+            doc.build(elements, onFirstPage=add_footer, onLaterPages=add_footer)                                   #lager fil ut ifra elementer
+            os.startfile(pdf_filename)                                                                             #åpner filen som er laget
+        except Exception as e:                                                                                     #hvis det skjer en feil
+            print(f"Error generating PDF: {e}")                                                                    #print feilmelding i terminalen
 
 def add_footer(canvas, doc):                                                                                   #funksjon for å legge til footer
     footer_text = "Gruppe 1 AS | +47 911 | Gymnasvegen 27 | Org.nr: 987237910MVA"                              #legger til informasjon om "organisasjonen"                                                                                        #
