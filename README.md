@@ -158,15 +158,7 @@ Tilbyr følgende funksjoner via GUI-grensesnittet:
  
 ### **Tabeller i databasen:**  
  
-- **`kunde`** (kunderegister, utvidet med is_active kolonne)  
- 
-- **`vare`** (produktlager)  
- 
-- **`ordre`** (ordrehistorikk)  
- 
-- **`ordrelinje`** (varer i hver ordre)  
- 
-- **`faktura `** (lagrer genererte faktura-ID'er knyttet til ordrer og kunder)  
+Dette stemmer ikke i hele tatt, se eer diagram i rapporten
  
 ### **Eksempel på Stored Procedure brukt (hent_alle_kunder):**  
  
