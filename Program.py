@@ -42,10 +42,12 @@ class GUI:
             "Kunder": self.hentAlleKunder,
             "Avslutt": self.terminate
         }
-        for i, (text, command) in enumerate(buttons.items()):                                       #For loop for å generere knappene på en enkel måte
-            button = tk.Button(master=button_frame, text=text, font=("Arial", 14), command=command) #Lager knapp ut ifra satte krav (i dictonary Buttons)
-            button.grid(row=i, column=0, sticky="ew", pady=5)                                       #Plasserer knappene i grid
-
+        for i, (text, command) in enumerate(buttons.items()):                                                           #For loop for å generere knappene på en enkel måte
+            button = tk.Button(master=button_frame, text=text, font=("Arial", 14), command=command)                     #Lager knapp ut ifra satte krav (i dictonary Buttons)
+            button.grid(row=i, column=0, sticky="ew", pady=5)                                                           #Plasserer knappene i grid
+        self.info = tk.Label(master=button_frame, text="For mer informasjon om en ordre\n dobbelklikk på ordrelinjen")  #Lager label med info om hvordan få mer informasjon om en ordre
+        self.info.grid(row=4, column=0, sticky="ew", pady=5)                                                            #Plasserer labelen i grid
+        
         # Treeview opprettelse for å vise resultat fra SQL spørringer
         self.tree = ttk.Treeview(self.root, show="headings")                                        #Oppretter tre for å vise data
         self.tree.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")                            #Setter størrelse og plassering i GUI. North, South, East, West (nsew)
@@ -222,7 +224,7 @@ class GUI:
                                                                                                             #Kaller på funksjonen som henter alle kunder fra databasen
         data = self.db.call_procedure("hent_alle_kunder")                                                   #Henter data fra databasen med følgende store procedures: "SELECT * FROM varehusdb.kunde;"
         for i in data:                                                                                      #Henter dataene som ligger i variablen data
-            self.kunde_tree.insert("", "end", values=i)  
+            self.kunde_tree.insert("", "end", values=i)
                      
     def omVindu(self):                                                                                                                  #Funksjon for å vise informasjon om programmet
         # Lager nytt vindu for å vise informasjon om programmet
@@ -242,7 +244,7 @@ class GUI:
         
         #Lager nytt vindu for ordre detaljer
         self.kunde_window = tk.Toplevel(self.root)                                                        #Lager popupvindu
-        self.kunde_window.title("Kunde")                                                                  #Setter navn på popupvindu basert på ordrenummer
+        self.kunde_window.title("Kunde")                                                                  #Setter rett navn på popupvindu 
         self.kunde_window.geometry("1080x400") 
         self.kunde_window.columnconfigure(0, minsize=5)
         self.kunde_window.columnconfigure(1, weight=1)
