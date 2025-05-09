@@ -36,7 +36,7 @@ class Database:
 
             # SQL-spørring for å opprette faktura-tabellen
             # Tabellen har kolonnene id, OrdreNr, KNr og dato.
-            # id er en auto-increment primærnøkkel, OrdreNr og KNr er utenlandsk nøkkel som refererer til ordre og kunde-tabellene.
+            # id er en auto-increment primærnøkkel, OrdreNr og KNr er foreignkey som refererer til ordre og kunde-tabellene.
             # dato er en datetime-kolonne som får standardverdien til å være nåværende tidspunkt.
             # Tabellen opprettes kun hvis den ikke allerede eksisterer.
 
