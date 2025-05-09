@@ -156,9 +156,17 @@ Tilbyr følgende funksjoner via GUI-grensesnittet:
  
 
  
-### **Tabeller i databasen:**  
- 
-Dette stemmer ikke i hele tatt, se eer diagram i rapporten
+### **Tabeller i databasen:**
+
+- **`ansatt`** (Informasjon om ansatte)
+- **`faktura`** (Lagrer informasjon om genererte fakturaer og knytter dem til ordrer og kunder - **Lagt til av oss**)
+- **`kategori`** (Kategorier for varer)
+- **`kunde`** (Kunderegister - **Utvidet med `is_active` kolonne av oss**)
+- **`ordre`** (Ordrehistorikk)
+- **`ordrelinje`** (Detaljer om varene som inngår i hver ordre)
+- **`poststed`** (Kobling mellom postnummer og poststeder for adresser)
+- **`prishistorikk`** (Historiske prisendringer for varer)
+- **`vare`** (Varelagerinformasjon)
  
 ### **Eksempel på Stored Procedure brukt (hent_alle_kunder):**  
  
