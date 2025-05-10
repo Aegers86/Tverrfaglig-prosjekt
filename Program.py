@@ -47,7 +47,7 @@ class GUI:
             button.grid(row=i, column=0, sticky="ew", pady=5)                                                           #Plasserer knappene i grid
         self.info = tk.Label(master=button_frame, text="For mer informasjon om en ordre\n dobbelklikk på ordrelinjen")  #Lager label med info om hvordan få mer informasjon om en ordre
         self.info.grid(row=4, column=0, sticky="ew", pady=5)                                                            #Plasserer labelen i grid
-        
+
         # Treeview opprettelse for å vise resultat fra SQL spørringer
         self.tree = ttk.Treeview(self.root, show="headings")                                        #Oppretter tre for å vise data
         self.tree.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")                            #Setter størrelse og plassering i GUI. North, South, East, West (nsew)
@@ -174,7 +174,7 @@ class GUI:
         #Legge til label for totalsum
         Totalsum = 0                                                                                #Variabel som lages for å ha en plass å lagre informasjon i forloopen
         for i in data:                                                                              #Forloop for å velge alle elementene i ordren
-            Totalsum += i[3]                                                                        #Kode for å gå gjennom elementene i kolonnen sum (den 4 kolonnen, den skrives som 3 da det telles fra 0) og legge dem sammen
+            Totalsum += i[4]                                                                        #Kode for å gå gjennom elementene i kolonnen sum (den 4 kolonnen, den skrives som 3 da det telles fra 0) og legge dem sammen
         Totalsumlabel = tk.Label(details_window, text = f"Totalsum: {Totalsum}")                    #Her lager vi label som vi kaller Totalsumlabel, den viser innholdet i utregningen over
         Totalsumlabel.pack(pady = 100)                                                              #Her definierer vi hvor labelen skal være i visningsvinduet
 
