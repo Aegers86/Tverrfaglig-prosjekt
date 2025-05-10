@@ -22,7 +22,7 @@ class PDFGenerator:                                                             
         customer_info = f"""
         <b>Fakturanummer:</b> {faktura_nummer}<br/>
         <b>Kunde:</b> {kunde[1]} {kunde[2]}<br/>
-        <b>Adresse:</b> {kunde[3]}, {kunde[4]}<br/>
+        <b>Adresse:</b> {kunde[3]}, {kunde[4]} {kunde[7]}<br/>
         """
         elements.append(Paragraph(customer_info, styles["Normal"]))             #legge til innholdet i variabelen over i dokumentet
         elements.append(Spacer(1, 12))                                          #legger til en spacer i PDF-en som et element
