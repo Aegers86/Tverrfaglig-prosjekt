@@ -145,7 +145,7 @@ class GUI:
         # Legge til kundeinfo i ordrevindu
         kundenummer = self.tree.item(selected_item[0], "values")[4]                                                                                                                     #Variabel for å lagre brukervalg i ordre
         kundedata = self.db.fetch_one("SELECT * ,Poststed.Poststed FROM kunde inner join Poststed on Kunde.PostNr = Poststed.PostNr WHERE KNr = %s;", (kundenummer,))                   #Variabel som lagrer resultat fra SQL-spørring. Her skal vi vise adresse til kunde og må koble sammen postnummer og poststed for å få riktig visning slik vi vil ha det. Dette gjør vi med inner join og henter fra to tabeller "poststed" og "kunde".    
-        print(kundedata)                                                                                                                                    #Debugging print, vi lar denne stå for å vise hvordan vi jobbet med å finne rett måte å velge rett index.
+        #print(kundedata)                                                                                                                                                               #Debugging print, vi lar denne stå for å vise hvordan vi jobbet med å finne rett måte å velge rett index.
         kundelabel = tk.Label(details_window, text = f"Kundenummer: {kundedata[0]}\nNavn: {kundedata[1]} {kundedata[2]}\n Adresse: {kundedata[3]}, {kundedata[4]} {kundedata[7]}")      #Viser kundeprofil        
         kundelabel.pack(pady = 100, side="left")                                                                                                                                        #Pakker det hele sammen. Vi velger også å vise kundedataene til venstre i visningsvinduet
 
@@ -163,7 +163,7 @@ class GUI:
         details_tree.configure(yscrollcommand=details_vsb.set)                                      #Kobler sammen treet og scrollbaren
 
         # Henter data for ordre detaljer
-        details_tree["columns"] = ("Varenummer", "Beskrivelse", "Enhetspris", "Antall", "Sum")                     #Setter inn kolonner
+        details_tree["columns"] = ("Varenummer", "Beskrivelse", "Enhetspris", "Antall", "Sum")      #Setter inn kolonner
         for col in details_tree["columns"]:                                                         #for loop som den kjører gjennom
             details_tree.heading(col, text=col)                                                     #Setter overskrift
             details_tree.column(col, width=100, anchor="center")                                    #Forteller at kolonnen skal være 100px bred og midtstilt
@@ -190,7 +190,7 @@ class GUI:
         ordrelinjer = self.db.fetch_all("SELECT ordrelinje.*, vare.betegnelse FROM ordrelinje JOIN vare ON ordrelinje.VNr = vare.VNr WHERE ordrelinje.ordreNr = %s;", (ordreNr,))  #Henter ordrelinjer fra databasen med beskyttet parameter for SQL-injeksjon.
         ordre = self.db.fetch_one("SELECT * FROM ordre WHERE OrdreNr = %s;", (ordreNr,))                                                                                           #Henter ordre data fra databasen med beskyttet parameter for SQL-injeksjon.
         kunde = self.db.fetch_one("SELECT * ,Poststed.Poststed FROM kunde inner join Poststed on Kunde.PostNr = Poststed.PostNr WHERE KNr = %s;", (ordre[4],))                                                                                              #Henter kunde data fra databasen med beskyttet parameter for SQL-injeksjon.
-        print(kunde)
+        #print(kunde)                                                                                                                                                              #Debugging print, vi lar denne stå for å vise hvordan vi jobbet med å finne rett måte å velge rett index.  
         faktura_nummer = self.db.insert_faktura(ordre[0],kunde[0])                                                                                                                 #Lager faktura i databasen med ordrenummer og kundenummer.
         #print(f"faktura_nummer: {faktura_nummer}")                                                                                                                                #debugging print, vi lar denne stå for å vise hvordan vi jobbet med å finne rett måte å velge rett index.
         #print(f"ordre {ordre},ordrelinje {ordrelinjer}, kunde {kunde}")                                                                                                           #debugging print, vi lar denne stå for å vise hvordan vi jobbet med å finne rett måte å velge rett index.
